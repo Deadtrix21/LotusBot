@@ -7,15 +7,19 @@ class EconomyCog(Cog, name="Economy"):
         self.bot = bot
 
     async def dig_values(self):
-        items = random.randrange(0, 300), random.randrange(300, 500), random.randrange(500, 700), random.randrange(700,
-                                                                                                                   1200)
+        items = (
+            random.randrange(0, 300),
+            random.randrange(300, 500),
+            random.randrange(500, 700),
+            random.randrange(700, 1200)
+        )
         probabilities = [0.5, 0.35, 0.1, 0.05]
         return numpy.random.choice(items, p=probabilities)
 
     @commands.command(aliases=["dig"])
     @commands.guild_only()
     @commands.cooldown(1, 60, commands.BucketType.user)
-    async def Search(self, ctx):
+    async def search(self, ctx):
         user = await User.find_one(User.dn_id == ctx.author.id)
         if user == None:
             await ctx.send("Please consider registering.")
@@ -26,7 +30,7 @@ class EconomyCog(Cog, name="Economy"):
 
     @commands.command()
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def Profile(self, ctx):
+    async def profile(self, ctx):
         """
         View your profile
         """
@@ -39,6 +43,44 @@ class EconomyCog(Cog, name="Economy"):
         Embed.add_field(name=f"Bank Account", value=f"{account.economy.bank}")
         Embed.add_field(name=f"Wallet", value=f"{account.economy.wallet}")
         await ctx.send(embed=Embed)
+
+    @commands.command(aliases=["give"])
+    @commands.cooldown(1, 25, commands.BucketType.user)
+    async def pay(self, ctx, value: int, Member: discord.Member):
+        """ Pay or Give people money
+        """
+        fromUser = await User.find_one(User.dn_id == ctx.author.id)
+        toUser = await User.find_one(User.dn_id == Member.id)
+        if fromUser == None:
+            await ctx.send("Please consider registering.")
+        elif toUser == None:
+            await ctx.send("The user your trying to pay, is not registered.")
+        else:
+            if (value > fromUser.economy.wallet):
+                await ctx.send("Please consider withdrawing from the bank or earning more money for doing activities.")
+            elif (value <= fromUser.economy.wallet):
+                wallet = fromUser.economy.wallet - value
+                await fromUser.set({User.economy: Economy(wallet=wallet, bank=fromUser.economy.bank)})
+                await toUser.set(
+                    {User.economy: Economy(wallet=toUser.economy.wallet + value, bank=toUser.economy.bank)})
+                await ctx.send(f"{ctx.author.mention} payed {value} to {Member.mention}")
+
+    @commands.command(aliases=["dep"])
+    @commands.cooldown(1, 120, commands.BucketType.user)
+    async def deposit(self, ctx, amount:int):
+        """Deposit money into the bank
+        """
+        fromUser = await User.find_one(User.dn_id == ctx.author.id)
+        if fromUser == None:
+            await ctx.send("Please consider registering.")
+        else:
+            if (amount > fromUser.economy.wallet):
+                await ctx.send("Please consider withdrawing from the bank or earning more money for doing activities.")
+            elif (amount <= fromUser.economy.wallet):
+                wallet = fromUser.economy.wallet - amount
+                bank = fromUser.economy.bank + amount
+                await fromUser.set({User.economy: Economy(wallet=wallet, bank=bank)})
+                await ctx.send(f"{ctx.author.mention} deposited {amount} money into their account")
 
 
 def setup(bot):

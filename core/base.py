@@ -8,13 +8,14 @@ from .database import DataBaseLayer
 
 class NightMareAutoSharded(AutoShardedBot):
     def __init__(self):
-        super().__init__("x", intents=discord.Intents.default().all())
+        super().__init__("x", intents=discord.Intents.default().all(), case_insensitive=True)
         self.__database_layer__ = DataBaseLayer()
 
     async def on_connect(self):
         self.load_extension(f"extentions.Admin")
         self.load_extension(f"extentions.Account")
         self.load_extension(f"extentions.Economy")
+        self.load_extension(f"extentions.Status")
         return await super().on_connect()
 
     async def on_ready(self):

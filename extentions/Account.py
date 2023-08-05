@@ -5,10 +5,15 @@ class Account(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    def staff_perms(user_level:str):
+        async def predicate(ctx:bridge.BridgeExtContext):
+            pass
+        return commands.check(predicate)
+
     @commands.command()
     @commands.dm_only()
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def Register(self, ctx, email: str, psw: str):
+    async def register(self, ctx, email: str, psw: str):
         """
         Created an Account for yourself
 
@@ -27,7 +32,7 @@ class Account(commands.Cog):
     @commands.command()
     @commands.dm_only()
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def Login(self, ctx, email: str, psw: str):
+    async def login(self, ctx, email: str, psw: str):
         """
         Login to an Account
 
@@ -47,7 +52,7 @@ class Account(commands.Cog):
 
     @commands.command()
     @commands.is_owner()
-    async def CreateRole(self, ctx, name: str):
+    async def createrole(self, ctx, name: str):
         selected_role = await Role.find_one(Role.name == name)
         if (selected_role):
             await ctx.send(f"Role does exist already.")
@@ -57,7 +62,7 @@ class Account(commands.Cog):
 
     @commands.command()
     @commands.is_owner()
-    async def AssignRole(self, ctx, member: discord.Member, name: str):
+    async def assignrole(self, ctx, member: discord.Member, name: str):
         selected_role = await Role.find_one(Role.name == name)
         if not selected_role:
             await ctx.send(f"Role does not exist.")
