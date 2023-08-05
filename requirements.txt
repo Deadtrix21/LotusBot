@@ -1,0 +1,11 @@
+py-cord[speed] @ git+https://github.com/Pycord-Development/pycord
+marshmallow-dataclass[enum,union]
+humanfriendly
+python-dotenv
+asyncinit
+Pillow
+waifu-py
+arrow
+gtts
+beanie
+numpy
