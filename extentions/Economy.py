@@ -1,17 +1,16 @@
 import discord
 
 from utils.CommonImports import *
-from utils.orm_models import User, Economy, Role, Permission, Account
+from utils.orm_models import User, Economy, Role, Permission, Account, Work, Occupation
 
 
 class EconomyCog(Cog, name="Economy"):
     def __init__(self, bot):
         self.bot = bot
 
-
-    def UserBanned(_ : any = None):
+    def UserBanned(_: any = None):
         async def predicate(ctx: bridge.BridgeExtContext):
-            user = await Account.find_one(Account.dn_id == ctx.author.id, fetch_links=True)
+            user = await Account.find_one(Account.dn_id == str(ctx.author.id), fetch_links=True)
             if (user):
                 role: Role = user.role
                 if (role.name == "BannedAccount"):
@@ -20,6 +19,7 @@ class EconomyCog(Cog, name="Economy"):
                     return True
             else:
                 return True
+
         return commands.check(predicate)
 
     async def dig_values(self):
@@ -40,14 +40,15 @@ class EconomyCog(Cog, name="Economy"):
     @commands.command(aliases=["dig"])
     @UserBanned()
     @commands.guild_only()
-    @commands.cooldown(1, 60, commands.BucketType.user)
+    @commands.cooldown(1, 80, commands.BucketType.user)
     async def search(self, ctx):
-        user = await User.find_one(User.dn_id == ctx.author.id)
+        user = await User.find_one(User.dn_id == str(ctx.author.id))
         if user == None:
             await ctx.send("Please consider registering.")
         else:
             amount = await self.dig_values()
-            await user.set({User.economy: Economy(wallet=user.economy.wallet + int(amount), bank=user.economy.bank)})
+            user.economy.wallet = user.economy.wallet + int(amount)
+            await user.save()
             await ctx.send(f"{ctx.author.mention} Mined {amount} gold Illegally")
 
     @commands.command()
@@ -58,11 +59,11 @@ class EconomyCog(Cog, name="Economy"):
         View your profile
         """
         if (member):
-            account = await User.find_one(User.dn_id == member.id)
-            staffAccount = await Account.find_one(Account.dn_id == member.id, fetch_links=True)
+            account = await User.find_one(User.dn_id == str(member.id))
+            staffAccount = await Account.find_one(Account.dn_id == str(member.id), fetch_links=True)
         else:
-            account = await User.find_one(User.dn_id == ctx.author.id)
-            staffAccount = await Account.find_one(Account.dn_id == ctx.author.id, fetch_links=True)
+            account = await User.find_one(User.dn_id == str(ctx.author.id))
+            staffAccount = await Account.find_one(Account.dn_id == str(ctx.author.id), fetch_links=True)
         if account == None:
             if (member == None):
                 await ctx.send("Please consider asking the person to register.")
@@ -87,8 +88,8 @@ class EconomyCog(Cog, name="Economy"):
     async def pay(self, ctx, value: int, Member: discord.Member):
         """ Pay or Give people money
         """
-        fromUser = await User.find_one(User.dn_id == ctx.author.id)
-        toUser = await User.find_one(User.dn_id == Member.id)
+        fromUser = await User.find_one(User.dn_id == str(ctx.author.id))
+        toUser = await User.find_one(User.dn_id == str(Member.id))
         if fromUser == None:
             await ctx.send("Please consider registering.")
         elif toUser == None:
@@ -109,7 +110,7 @@ class EconomyCog(Cog, name="Economy"):
     async def deposit(self, ctx, amount: int):
         """Deposit money into the bank (must be 5000 or more)
         """
-        fromUser = await User.find_one(User.dn_id == ctx.author.id)
+        fromUser = await User.find_one(User.dn_id == str(ctx.author.id))
         if fromUser == None:
             await ctx.send("Please consider registering.")
         else:
@@ -120,6 +121,23 @@ class EconomyCog(Cog, name="Economy"):
                 bank = fromUser.economy.bank + amount
                 await fromUser.set({User.economy: Economy(wallet=wallet, bank=bank)})
                 await ctx.send(f"{ctx.author.mention} deposited {amount} money into their account")
+
+    @commands.command(aliases=["tax"])
+    @UserBanned()
+    async def Register4Tax(self, ctx):
+        """Register for tax
+        """
+        fromUser = await User.find_one(User.dn_id == str(ctx.author.id))
+        if fromUser == None:
+            await ctx.send("Please consider registering.")
+        elif fromUser.occupation:
+            await ctx.send("You can't register for tax again.")
+        else:
+            occupation = Occupation(level=0,exp=0,last_work_day="", work= await Work.find_one(Work.level == 0))
+            await occupation.save()
+            fromUser.occupation = occupation;
+            await fromUser.save()
+            await ctx.send("Registered for tax.")
 
 
 def setup(bot):

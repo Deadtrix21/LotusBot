@@ -12,7 +12,7 @@ class DataBaseLayer:
     async def __pre__init__orm__(self):
         await init_beanie(database=self.__db, document_models=[
             Token,
-            User,Role,Account
+            User,Role,Account,Work,Occupation
         ])
 
     async def __current__token__(self, name: str):

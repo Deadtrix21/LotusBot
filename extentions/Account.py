@@ -1,5 +1,5 @@
 from utils.CommonImports import *
-from utils.orm_models import User, Economy, Role, Permission, Account as StaffAccount
+from utils.orm_models import User, Economy, Role, Permission, Account as StaffAccount, Work, Occupation
 
 
 class Account(commands.Cog):
@@ -12,8 +12,6 @@ class Account(commands.Cog):
 
         return commands.check(predicate)
 
-
-
     @commands.command()
     @commands.dm_only()
     @commands.cooldown(1, 5, commands.BucketType.user)
@@ -24,11 +22,11 @@ class Account(commands.Cog):
         :parameter email: Enter your email
         :parameter psw: Enter a password
         """
-        account = await User.find_one(User.dn_id == ctx.author.id)
+        account = await User.find_one(User.dn_id == str(ctx.author.id))
         if (account):
             await ctx.send(f"Account already Exists")
         else:
-            user = User(dn_id=ctx.author.id, email=email, password=hashlib.sha256(psw.encode('utf-8')).hexdigest(),
+            user = User(dn_id=str(ctx.author.id), email=email, password=hashlib.sha256(psw.encode('utf-8')).hexdigest(),
                         economy=Economy(Wallet=0, BankAccount=0))
             await user.insert()
             await ctx.send(f"Account Created using {email}")
@@ -46,7 +44,7 @@ class Account(commands.Cog):
         account = await User.find_one(User.email == email)
         if (account):
             if (account.password == hashlib.sha256(psw.encode('utf-8')).hexdigest()):
-                account.dn_id = ctx.author.id
+                account.dn_id = str(ctx.author.id)
                 await account.update()
                 await ctx.send("Account moved to this discord account.")
             else:
@@ -70,23 +68,36 @@ class Account(commands.Cog):
         selected_role = await Role.find_one(Role.name == name)
         if not selected_role:
             await ctx.send(f"Role does not exist.")
-        account = await StaffAccount.find_one(StaffAccount.dn_id == member.id)
+        account = await StaffAccount.find_one(StaffAccount.dn_id == str(member.id))
         if (account):
             account.role = selected_role
             account.update()
         else:
-            await StaffAccount(dn_id=member.id, role=selected_role).insert()
+            await StaffAccount(dn_id=str(member.id), role=selected_role).insert()
         await ctx.send(f"Role has been updated for {member.name}")
 
     @commands.command()
     @commands.is_owner()
     async def removerole(self, ctx, member: discord.Member):
-        account = await StaffAccount.find_one(StaffAccount.dn_id == member.id)
+        account = await StaffAccount.find_one(StaffAccount.dn_id == str(member.id))
         if (account == None):
             await ctx.send(f"{member.mention} has no staff account.")
         else:
             await account.delete()
             await ctx.send(f"{member.mention} has staff account removed.")
+
+    @commands.command()
+    @commands.is_owner()
+    async def CreateJob(self, ctx, lvl: float, nameJ: str, daily: float):
+        fromJob = await Work.find_one(Work.name == nameJ)
+        if fromJob:
+            return await ctx.send("That Job name already exists.")
+        fromJob = await Work.find_one(Work.level == lvl)
+        if fromJob:
+            return await ctx.send("That Job level already exists.")
+        work = Work(level=lvl, name=nameJ, daily_rate=daily)
+        await work.save()
+        await ctx.send("That Job has been created.")
 
 
 def setup(bot):
