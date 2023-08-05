@@ -1,16 +1,12 @@
-import typing
-from datetime import datetime
-
-import discord
 import humanfriendly
-from discord.ext import commands
 
+from utils.CommonImports import *
 
 class Admin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
+    @bridge.bridge_command()
     @commands.guild_only()
     @commands.has_guild_permissions(kick_members=True)
     @commands.bot_has_permissions(kick_members=True)
@@ -25,11 +21,11 @@ class Admin(commands.Cog):
         await member.kick(reason=reason)
         await ctx.send(f'Kicked `{member}`')
 
-    @commands.command(aliases=['b'])
+    @bridge.bridge_command()
     @commands.has_guild_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def ban(self, ctx, member: typing.Union[discord.Member, int], *, reason):
+    async def ban(self, ctx, member: discord.Member, *, reason):
         """
         Bans a member from the server. Reason is required
         You can also ban someone that is not in the server using their user ID.
@@ -63,10 +59,13 @@ class Admin(commands.Cog):
                 await target.ban(reason=reason, delete_message_days=0)
                 await ctx.send(f'Banned `{target}`')
 
-    @commands.command()
+    @bridge.bridge_command()
     @commands.guild_only()
     @commands.has_permissions(ban_members=True)
     async def unban(self, ctx, member):
+        """
+        Unban a user from server
+        """
         try:
             member: discord.User = await self.bot.fetch_user(member)
             try:
@@ -79,12 +78,15 @@ class Admin(commands.Cog):
             print(E)
             await ctx.send("User Does Not Exist")
 
-    @commands.command()
+    @bridge.bridge_command()
     @commands.guild_only()
     async def invite(self, ctx):
+        """
+        Create a server invite
+        """
         await ctx.send(await discord.abc.GuildChannel.create_invite(ctx.message.channel))
 
-    @commands.command(aliases=['mute'])
+    @bridge.bridge_command(aliases=['mute'])
     @commands.guild_only()
     @commands.has_guild_permissions(moderate_members=True)
     @commands.bot_has_permissions(moderate_members=True)
@@ -100,7 +102,7 @@ class Admin(commands.Cog):
         await member.timeout(until=discord.utils.utcnow() + datetime.timedelta(seconds=time), reason=reason)
         await ctx.send(f"{member} has been muted for {time}.\nReason: {reason}")
 
-    @commands.command()
+    @bridge.bridge_command()
     @commands.guild_only()
     @commands.has_guild_permissions(moderate_members=True)
     @commands.bot_has_permissions(moderate_members=True)
