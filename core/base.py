@@ -16,6 +16,7 @@ class NightMareAutoSharded(AutoShardedBot):
         self.load_extension(f"extentions.Account")
         self.load_extension(f"extentions.Economy")
         self.load_extension(f"extentions.Status")
+        self.load_extension(f"extentions.ErrorHandler")
         return await super().on_connect()
 
     async def on_ready(self):
