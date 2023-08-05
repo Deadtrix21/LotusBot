@@ -1,12 +1,11 @@
-import asyncio
-
+from utils.CommonImports import *
 from utils.orm_imp import *
 from utils.orm_models import *
 
 
 class DataBaseLayer:
     def __init__(self):
-        self.__client = AsyncIOMotorClient("mongodb://localhost:27017")
+        self.__client = AsyncIOMotorClient(f"mongodb+srv://{os.getenv('USER')}:{os.getenv('PSW')}@{os.getenv('CLUSTER')}/?retryWrites=true&w=majority")
         self.__db = self.__client["DiscordDatabase"]
         self.token_config = None
 
