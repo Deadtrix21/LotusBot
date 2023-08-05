@@ -1,5 +1,7 @@
+import discord
+
 from utils.CommonImports import *
-from utils.orm_models import User, Economy, Role, Permission
+from utils.orm_models import User, Economy, Role, Permission,Account
 
 
 class EconomyCog(Cog, name="Economy"):
@@ -30,18 +32,26 @@ class EconomyCog(Cog, name="Economy"):
 
     @commands.command()
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def profile(self, ctx):
+    async def profile(self, ctx, member:discord.Member=None):
         """
         View your profile
         """
-        account = await User.find_one(User.dn_id == ctx.author.id)
+        if (member):
+            account = await User.find_one(User.dn_id == member.id)
+            staffAccount = await Account.find_one(Account.dn_id == member.id, fetch_links=True)
+        else:
+            account = await User.find_one(User.dn_id == ctx.author.id)
+            staffAccount = await Account.find_one(Account.dn_id == ctx.author.id, fetch_links=True)
         Embed = discord.Embed(
             title=f"Profile: {ctx.author.name}",
             description="",
             color=0x000c30
         )
-        Embed.add_field(name=f"Bank Account", value=f"{account.economy.bank}")
-        Embed.add_field(name=f"Wallet", value=f"{account.economy.wallet}")
+        if (staffAccount):
+            Embed.add_field(name=f"Staff Role", value=f"{staffAccount.role.name}", inline=False)
+        if(account):
+            Embed.add_field(name=f"Bank Account", value=f"{account.economy.bank}", inline=False)
+            Embed.add_field(name=f"Wallet", value=f"{account.economy.wallet}", inline=False)
         await ctx.send(embed=Embed)
 
     @commands.command(aliases=["give"])
