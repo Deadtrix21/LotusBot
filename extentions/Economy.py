@@ -12,9 +12,12 @@ class EconomyCog(Cog, name="Economy"):
     def UserBanned(_ : any = None):
         async def predicate(ctx: bridge.BridgeExtContext):
             user = await Account.find_one(Account.dn_id == ctx.author.id, fetch_links=True)
-            role: Role = user.role
-            if (role.name == "BannedAccount"):
-                return False
+            if (user):
+                role: Role = user.role
+                if (role.name == "BannedAccount"):
+                    return False
+                else:
+                    return True
             else:
                 return True
         return commands.check(predicate)
@@ -55,7 +58,6 @@ class EconomyCog(Cog, name="Economy"):
         else:
             account = await User.find_one(User.dn_id == ctx.author.id)
             staffAccount = await Account.find_one(Account.dn_id == ctx.author.id, fetch_links=True)
-
         if account == None:
             if (member == None):
                 await ctx.send("Please consider asking the person to register.")
@@ -63,7 +65,7 @@ class EconomyCog(Cog, name="Economy"):
                 await ctx.send("Please consider registering.")
         else:
             Embed = discord.Embed(
-                title=f"Profile: {ctx.author.name}",
+                title=f"Profile: {ctx.author.name if member == None else member.name}",
                 description="",
                 color=0x000c30
             )
