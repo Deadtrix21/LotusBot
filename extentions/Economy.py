@@ -27,10 +27,15 @@ class EconomyCog(Cog, name="Economy"):
             random.randrange(0, 300),
             random.randrange(300, 500),
             random.randrange(500, 700),
-            random.randrange(700, 1200)
+            random.randrange(700, 2200)
         )
-        probabilities = [0.5, 0.35, 0.1, 0.05]
-        return numpy.random.choice(items, p=probabilities)
+        probabilities = [
+            0.60,
+            0.25,
+            0.14,
+            0.01
+        ]
+        return float(numpy.random.choice(items, p=probabilities))
 
     @commands.command(aliases=["dig"])
     @UserBanned()

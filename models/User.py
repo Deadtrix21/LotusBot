@@ -2,8 +2,8 @@ from utils.orm_imp import *
 
 
 class Economy(BaseModel):
-    bank: Optional[int] = 0
-    wallet: Optional[int] = 0
+    bank: Optional[float] = 0
+    wallet: Optional[float] = 0
 
 
 class User(Document):
