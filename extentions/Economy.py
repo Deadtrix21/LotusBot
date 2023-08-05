@@ -107,7 +107,7 @@ class EconomyCog(Cog, name="Economy"):
     @UserBanned()
     @commands.cooldown(1, 120, commands.BucketType.user)
     async def deposit(self, ctx, amount: int):
-        """Deposit money into the bank
+        """Deposit money into the bank (must be 5000 or more)
         """
         fromUser = await User.find_one(User.dn_id == ctx.author.id)
         if fromUser == None:
