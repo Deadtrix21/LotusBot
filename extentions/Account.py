@@ -12,6 +12,8 @@ class Account(commands.Cog):
 
         return commands.check(predicate)
 
+
+
     @commands.command()
     @commands.dm_only()
     @commands.cooldown(1, 5, commands.BucketType.user)
@@ -75,6 +77,16 @@ class Account(commands.Cog):
         else:
             await StaffAccount(dn_id=member.id, role=selected_role).insert()
         await ctx.send(f"Role has been updated for {member.name}")
+
+    @commands.command()
+    @commands.is_owner()
+    async def removerole(self, ctx, member: discord.Member):
+        account = await StaffAccount.find_one(StaffAccount.dn_id == member.id)
+        if (account == None):
+            await ctx.send(f"{member.mention} has no staff account.")
+        else:
+            await account.delete()
+            await ctx.send(f"{member.mention} has staff account removed.")
 
 
 def setup(bot):

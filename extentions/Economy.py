@@ -1,12 +1,23 @@
 import discord
 
 from utils.CommonImports import *
-from utils.orm_models import User, Economy, Role, Permission,Account
+from utils.orm_models import User, Economy, Role, Permission, Account
 
 
 class EconomyCog(Cog, name="Economy"):
     def __init__(self, bot):
         self.bot = bot
+
+
+    def UserBanned(_ : any = None):
+        async def predicate(ctx: bridge.BridgeExtContext):
+            user = await Account.find_one(Account.dn_id == ctx.author.id, fetch_links=True)
+            role: Role = user.role
+            if (role.name == "BannedAccount"):
+                return False
+            else:
+                return True
+        return commands.check(predicate)
 
     async def dig_values(self):
         items = (
@@ -19,6 +30,7 @@ class EconomyCog(Cog, name="Economy"):
         return numpy.random.choice(items, p=probabilities)
 
     @commands.command(aliases=["dig"])
+    @UserBanned()
     @commands.guild_only()
     @commands.cooldown(1, 60, commands.BucketType.user)
     async def search(self, ctx):
@@ -31,8 +43,9 @@ class EconomyCog(Cog, name="Economy"):
             await ctx.send(f"{ctx.author.mention} Mined {amount} gold Illegally")
 
     @commands.command()
+    @UserBanned()
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def profile(self, ctx, member:discord.Member=None):
+    async def profile(self, ctx, member: discord.Member = None):
         """
         View your profile
         """
@@ -42,7 +55,6 @@ class EconomyCog(Cog, name="Economy"):
         else:
             account = await User.find_one(User.dn_id == ctx.author.id)
             staffAccount = await Account.find_one(Account.dn_id == ctx.author.id, fetch_links=True)
-
 
         if account == None:
             if (member == None):
@@ -57,12 +69,13 @@ class EconomyCog(Cog, name="Economy"):
             )
             if (staffAccount):
                 Embed.add_field(name=f"Staff Role", value=f"{staffAccount.role.name}", inline=False)
-            if(account):
+            if (account):
                 Embed.add_field(name=f"Bank Account", value=f"{account.economy.bank}", inline=False)
                 Embed.add_field(name=f"Wallet", value=f"{account.economy.wallet}", inline=False)
             await ctx.send(embed=Embed)
 
     @commands.command(aliases=["give"])
+    @UserBanned()
     @commands.cooldown(1, 25, commands.BucketType.user)
     async def pay(self, ctx, value: int, Member: discord.Member):
         """ Pay or Give people money
@@ -84,6 +97,7 @@ class EconomyCog(Cog, name="Economy"):
                 await ctx.send(f"{ctx.author.mention} payed {value} to {Member.mention}")
 
     @commands.command(aliases=["dep"])
+    @UserBanned()
     @commands.cooldown(1, 120, commands.BucketType.user)
     async def deposit(self, ctx, amount: int):
         """Deposit money into the bank
