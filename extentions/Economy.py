@@ -26,8 +26,8 @@ class EconomyCog(Cog, name="Economy"):
         items = (
             random.randrange(0, 300),
             random.randrange(300, 500),
-            random.randrange(500, 700),
-            random.randrange(700, 2200)
+            random.randrange(500, 1000),
+            random.randrange(1000, 3800)
         )
         probabilities = [
             0.60,
