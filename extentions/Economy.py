@@ -115,7 +115,7 @@ class EconomyCog(Cog, name="Economy"):
         else:
             if (amount > fromUser.economy.wallet):
                 await ctx.send("Please consider withdrawing from the bank or earning more money for doing activities.")
-            elif (amount <= fromUser.economy.wallet):
+            elif (amount <= fromUser.economy.wallet and amount >= 5000):
                 wallet = fromUser.economy.wallet - amount
                 bank = fromUser.economy.bank + amount
                 await fromUser.set({User.economy: Economy(wallet=wallet, bank=bank)})
