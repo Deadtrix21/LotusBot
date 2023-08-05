@@ -42,17 +42,22 @@ class EconomyCog(Cog, name="Economy"):
         else:
             account = await User.find_one(User.dn_id == ctx.author.id)
             staffAccount = await Account.find_one(Account.dn_id == ctx.author.id, fetch_links=True)
-        Embed = discord.Embed(
-            title=f"Profile: {ctx.author.name}",
-            description="",
-            color=0x000c30
-        )
-        if (staffAccount):
-            Embed.add_field(name=f"Staff Role", value=f"{staffAccount.role.name}", inline=False)
-        if(account):
-            Embed.add_field(name=f"Bank Account", value=f"{account.economy.bank}", inline=False)
-            Embed.add_field(name=f"Wallet", value=f"{account.economy.wallet}", inline=False)
-        await ctx.send(embed=Embed)
+
+            
+        if account == None:
+            await ctx.send("Please consider registering.")
+        else:
+            Embed = discord.Embed(
+                title=f"Profile: {ctx.author.name}",
+                description="",
+                color=0x000c30
+            )
+            if (staffAccount):
+                Embed.add_field(name=f"Staff Role", value=f"{staffAccount.role.name}", inline=False)
+            if(account):
+                Embed.add_field(name=f"Bank Account", value=f"{account.economy.bank}", inline=False)
+                Embed.add_field(name=f"Wallet", value=f"{account.economy.wallet}", inline=False)
+            await ctx.send(embed=Embed)
 
     @commands.command(aliases=["give"])
     @commands.cooldown(1, 25, commands.BucketType.user)
