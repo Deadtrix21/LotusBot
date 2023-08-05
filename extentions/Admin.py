@@ -15,7 +15,7 @@ class Admin(commands.Cog):
     @commands.has_guild_permissions(kick_members=True)
     @commands.bot_has_permissions(kick_members=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def kick(self, ctx, member:discord.Member, *, reason=None):
+    async def kick(self, ctx, member: discord.Member, *, reason=None):
         """
         Kicks a member from the server. Reason is required.
         """
@@ -25,12 +25,11 @@ class Admin(commands.Cog):
         await member.kick(reason=reason)
         await ctx.send(f'Kicked `{member}`')
 
-
     @commands.command(aliases=['b'])
     @commands.has_guild_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def ban(self, ctx, member:typing.Union[discord.Member,int], *, reason):
+    async def ban(self, ctx, member: typing.Union[discord.Member, int], *, reason):
         """
         Bans a member from the server. Reason is required
         You can also ban someone that is not in the server using their user ID.
@@ -51,7 +50,7 @@ class Admin(commands.Cog):
     @commands.has_guild_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def massban(self, ctx, members:commands.Greedy[discord.Member], *, reason):
+    async def massban(self, ctx, members: commands.Greedy[discord.Member], *, reason):
         """
         Mass bans multiple members from the server. Reason is required.
         You can only ban users who are in the server.
@@ -64,13 +63,12 @@ class Admin(commands.Cog):
                 await target.ban(reason=reason, delete_message_days=0)
                 await ctx.send(f'Banned `{target}`')
 
-
     @commands.command()
     @commands.guild_only()
     @commands.has_permissions(ban_members=True)
     async def unban(self, ctx, member):
         try:
-            member : discord.User = await self.bot.fetch_user(member)
+            member: discord.User = await self.bot.fetch_user(member)
             try:
                 await ctx.guild.unban(member)
                 await ctx.send(f"{member.name} has been unbanned.")
@@ -81,13 +79,10 @@ class Admin(commands.Cog):
             print(E)
             await ctx.send("User Does Not Exist")
 
-
-
     @commands.command()
     @commands.guild_only()
     async def invite(self, ctx):
         await ctx.send(await discord.abc.GuildChannel.create_invite(ctx.message.channel))
-
 
     @commands.command(aliases=['mute'])
     @commands.guild_only()

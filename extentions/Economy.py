@@ -67,7 +67,7 @@ class EconomyCog(Cog, name="Economy"):
 
     @commands.command(aliases=["dep"])
     @commands.cooldown(1, 120, commands.BucketType.user)
-    async def deposit(self, ctx, amount:int):
+    async def deposit(self, ctx, amount: int):
         """Deposit money into the bank
         """
         fromUser = await User.find_one(User.dn_id == ctx.author.id)

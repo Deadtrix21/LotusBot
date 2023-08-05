@@ -1,13 +1,15 @@
 from utils.CommonImports import *
 from utils.orm_models import User, Economy, Role, Permission, Account as StaffAccount
 
+
 class Account(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    def staff_perms(user_level:str):
-        async def predicate(ctx:bridge.BridgeExtContext):
+    def staff_perms(user_level: str):
+        async def predicate(ctx: bridge.BridgeExtContext):
             pass
+
         return commands.check(predicate)
 
     @commands.command()
@@ -71,7 +73,7 @@ class Account(commands.Cog):
             account.role = selected_role
             account.update()
         else:
-            await StaffAccount(dn_id=member.id,role=selected_role).insert()
+            await StaffAccount(dn_id=member.id, role=selected_role).insert()
         await ctx.send(f"Role has been updated for {member.name}")
 
 
