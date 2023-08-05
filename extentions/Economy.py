@@ -43,9 +43,12 @@ class EconomyCog(Cog, name="Economy"):
             account = await User.find_one(User.dn_id == ctx.author.id)
             staffAccount = await Account.find_one(Account.dn_id == ctx.author.id, fetch_links=True)
 
-            
+
         if account == None:
-            await ctx.send("Please consider registering.")
+            if (member == None):
+                await ctx.send("Please consider asking the person to register.")
+            else:
+                await ctx.send("Please consider registering.")
         else:
             Embed = discord.Embed(
                 title=f"Profile: {ctx.author.name}",
