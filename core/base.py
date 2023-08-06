@@ -16,6 +16,7 @@ class NightMareAutoSharded(AutoShardedBot):
         return await super().on_connect()
 
     def recursive_load(self):
+        self.LoadExtension('jishaku')
         extensions = []
         for file in os.listdir(os.getcwd() + "/" + "extentions"):
             if file.endswith(".py"):
