@@ -1,10 +1,9 @@
 import numpy.random
-from asyncinit import asyncinit
-
 from utils.CommonImports import *
+from utils.DiscordImports import *
 
 
-@asyncinit
+@asyncinit.asyncinit
 class EightBall:
     options = [
         "It is Certain.",

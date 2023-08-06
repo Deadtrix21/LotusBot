@@ -1,6 +1,6 @@
 from utils.CommonImports import *
-from utils.orm_imp import *
-from utils.orm_models import *
+from utils.OrmImports import *
+from utils.OrmModels import *
 
 
 class DataBaseLayer:

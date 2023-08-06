@@ -1,6 +1,7 @@
 import asyncio
 
 from utils.CommonImports import *
+from utils.DiscordImports import *
 
 
 class Status(Cog):

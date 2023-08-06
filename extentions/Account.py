@@ -1,5 +1,6 @@
 from utils.CommonImports import *
-from utils.orm_models import User, Economy, Role, Permission, Account as StaffAccount, Work, Occupation
+from utils.DiscordImports import *
+from utils.OrmModels import User, Economy, Role, Permission, Account as StaffAccount, Work, Occupation
 
 
 class Account(commands.Cog):
@@ -54,7 +55,7 @@ class Account(commands.Cog):
 
     @commands.command()
     @commands.is_owner()
-    async def createrole(self, ctx, name: str):
+    async def CreateRole(self, ctx, name: str):
         selected_role = await Role.find_one(Role.name == name)
         if (selected_role):
             await ctx.send(f"Role does exist already.")
@@ -64,7 +65,7 @@ class Account(commands.Cog):
 
     @commands.command()
     @commands.is_owner()
-    async def assignrole(self, ctx, member: discord.Member, name: str):
+    async def AssignRole(self, ctx, member: discord.Member, name: str):
         selected_role = await Role.find_one(Role.name == name)
         if not selected_role:
             await ctx.send(f"Role does not exist.")
@@ -78,7 +79,7 @@ class Account(commands.Cog):
 
     @commands.command()
     @commands.is_owner()
-    async def removerole(self, ctx, member: discord.Member):
+    async def RemoveRole(self, ctx, member: discord.Member):
         account = await StaffAccount.find_one(StaffAccount.dn_id == str(member.id))
         if (account == None):
             await ctx.send(f"{member.mention} has no staff account.")
@@ -88,14 +89,14 @@ class Account(commands.Cog):
 
     @commands.command()
     @commands.is_owner()
-    async def CreateJob(self, ctx, lvl: float, nameJ: str, daily: float):
+    async def CreateJob(self, ctx, lvl: float, nameJ: str, daily: float, exp:float):
         fromJob = await Work.find_one(Work.name == nameJ)
         if fromJob:
             return await ctx.send("That Job name already exists.")
         fromJob = await Work.find_one(Work.level == lvl)
         if fromJob:
             return await ctx.send("That Job level already exists.")
-        work = Work(level=lvl, name=nameJ, daily_rate=daily)
+        work = Work(level=lvl, name=nameJ, daily_rate=daily, daily_exp=exp)
         await work.save()
         await ctx.send("That Job has been created.")
 

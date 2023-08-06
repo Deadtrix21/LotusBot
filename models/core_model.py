@@ -1,4 +1,4 @@
-from utils.orm_imp import *
+from utils.OrmImports import *
 
 class Token(Document):
     name: str

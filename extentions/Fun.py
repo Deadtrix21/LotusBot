@@ -1,5 +1,5 @@
-from utils.CommonImports import *
 
+from utils.DiscordImports import *
 from classes import eightball, Actions
 
 Action_List = [
@@ -19,10 +19,9 @@ class Fun(commands.Cog):
     def set_actions_cmd_help(self):
         msg = "```\nCommand Options:"
         for i in Action_List:
-            msg+= f"\n     {i}"
+            msg += f"\n     {i}"
         msg += "```"
         return msg
-
 
     @bridge.bridge_command(name="8ball")
     @commands.guild_only()
@@ -38,10 +37,9 @@ class Fun(commands.Cog):
         elif isinstance(ctx, bridge.BridgeApplicationContext):
             await ctx.respond(embed=embeds.Embedded)
 
-
     @bridge.bridge_command()
     @discord.option(name="action", choices=Action_List)
-    async def do(self, ctx:bridge.BridgeContext, action:str="None", member:discord.Member=None):
+    async def do(self, ctx: bridge.BridgeContext, action: str = "None", member: discord.Member = None):
         """Anime Emotions: Actions required, Member sometimes
         """
         if isinstance(ctx, bridge.BridgeExtContext):
@@ -66,6 +64,7 @@ class Fun(commands.Cog):
                 await ctx.reply("that command needs a member mentioned", delete_after=10)
         if member != None:
             await ctx.send(member.mention)
+
 
 def setup(bot):
     c = Fun(bot)

@@ -1,8 +1,8 @@
 import os
 
 import discord
-from utils.master_imp import *
-from utils.orm_models import *
+from utils.MasterImports import *
+from utils.OrmModels import *
 from .database import DataBaseLayer
 
 
@@ -12,18 +12,29 @@ class NightMareAutoSharded(AutoShardedBot):
         self.__database_layer__ = DataBaseLayer()
 
     async def on_connect(self):
-        self.load_extension(f"extentions.Admin")
-        self.load_extension(f"extentions.Account")
-        self.load_extension(f"extentions.Economy")
-        self.load_extension(f"extentions.Status")
-        self.load_extension(f"extentions.ErrorHandler")
-        self.load_extension(f"extentions.Fun")
+        self.recursive_load()
         return await super().on_connect()
+
+    def recursive_load(self):
+        extensions = []
+        for file in os.listdir(os.getcwd() + "/" + "extentions"):
+            if file.endswith(".py"):
+                extensions.append("extentions" + "." + file[:-3])
+        for ext in extensions:
+            self.LoadExtension(ext)
+
+    def LoadExtension(self, name: str) -> list[str]:
+        try:
+            print(f"{name} - Loading")
+            self.load_extension(name)
+        except Exception as exception:
+            print(exception)
 
     async def on_ready(self):
         app = await self.application_info()
         print(f"App Name: {app.name}")
         print(f"App by {app.owner.name}")
+
 
     def connect_database(self):
         self.loop.run_until_complete(self.__database_layer__.PreHookDatabase(os.getenv("NAME")))

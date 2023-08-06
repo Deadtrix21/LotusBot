@@ -1,12 +1,18 @@
-import discord
-
 from utils.CommonImports import *
-from utils.orm_models import User, Economy, Role, Permission, Account, Work, Occupation
+from utils.DiscordImports import *
+from utils.OrmModels import User, Economy, Role, Permission, Account, Work, Occupation
+
+
+JsonConfig = None
+with open(os.getcwd() + "/configs/" + "EconomyConfig.json", "r") as file:
+    JsonConfig = json.load(file)
 
 
 class EconomyCog(Cog, name="Economy"):
-    def __init__(self, bot):
+    JobsAvailable = ["1","2"]
+    def __init__(self, bot : AutoShardedBot):
         self.bot = bot
+
 
     def UserBanned(_: any = None):
         async def predicate(ctx: bridge.BridgeExtContext):
@@ -44,7 +50,7 @@ class EconomyCog(Cog, name="Economy"):
     async def search(self, ctx):
         user = await User.find_one(User.dn_id == str(ctx.author.id))
         if user == None:
-            await ctx.send("Please consider registering.")
+            raise UserNotRegistered()
         else:
             amount = await self.dig_values()
             user.economy.wallet = user.economy.wallet + int(amount)
@@ -65,10 +71,7 @@ class EconomyCog(Cog, name="Economy"):
             account = await User.find_one(User.dn_id == str(ctx.author.id))
             staffAccount = await Account.find_one(Account.dn_id == str(ctx.author.id), fetch_links=True)
         if account == None:
-            if (member == None):
-                await ctx.send("Please consider asking the person to register.")
-            else:
-                await ctx.send("Please consider registering.")
+            raise UserNotRegistered(member)
         else:
             Embed = discord.Embed(
                 title=f"Profile: {ctx.author.name if member == None else member.name}",
@@ -91,9 +94,9 @@ class EconomyCog(Cog, name="Economy"):
         fromUser = await User.find_one(User.dn_id == str(ctx.author.id))
         toUser = await User.find_one(User.dn_id == str(Member.id))
         if fromUser == None:
-            await ctx.send("Please consider registering.")
+            raise UserNotRegistered()
         elif toUser == None:
-            await ctx.send("The user your trying to pay, is not registered.")
+            raise UserNotRegistered(Member)
         else:
             if (value > fromUser.economy.wallet):
                 await ctx.send("Please consider withdrawing from the bank or earning more money for doing activities.")
@@ -112,7 +115,7 @@ class EconomyCog(Cog, name="Economy"):
         """
         fromUser = await User.find_one(User.dn_id == str(ctx.author.id))
         if fromUser == None:
-            await ctx.send("Please consider registering.")
+            raise UserNotRegistered()
         else:
             if (amount > fromUser.economy.wallet):
                 await ctx.send("Please consider withdrawing from the bank or earning more money for doing activities.")
@@ -129,15 +132,29 @@ class EconomyCog(Cog, name="Economy"):
         """
         fromUser = await User.find_one(User.dn_id == str(ctx.author.id))
         if fromUser == None:
-            await ctx.send("Please consider registering.")
+            raise UserNotRegistered()
         elif fromUser.occupation:
-            await ctx.send("You can't register for tax again.")
+            raise UserRegisteredForTax()
         else:
             occupation = Occupation(level=0,exp=0,last_work_day="", work= await Work.find_one(Work.level == 0))
             await occupation.save()
             fromUser.occupation = occupation;
             await fromUser.save()
             await ctx.send("Registered for tax.")
+
+    @bridge.bridge_command(description=JsonConfig["intern-jobs-des"])
+    @discord.option(name="internship", choices=JsonConfig["intern-jobs"])
+    async def internship(self, ctx:bridge.BridgeContext, *, internship:str="None"):
+        fromUser = await User.find_one(User.dn_id == str(ctx.author.id))
+        if fromUser == None:
+            raise UserNotRegistered()
+        elif fromUser.occupation == None:
+            raise UserNotRegisteredForTax()
+        if isinstance(ctx, bridge.BridgeExtContext):
+            await ctx.send("hello world")
+        elif isinstance(ctx, bridge.BridgeApplicationContext):
+            await ctx.respond("hello world")
+
 
 
 def setup(bot):

@@ -1,4 +1,4 @@
-from utils.orm_imp import *
+from utils.OrmImports import *
 
 
 class Economy(BaseModel):
@@ -10,6 +10,7 @@ class Work(Document):
     level : float
     name : str
     daily_rate : float
+    daily_exp : float = 0
 
 class Occupation(Document):
     level : float = 0

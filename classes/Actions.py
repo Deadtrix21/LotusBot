@@ -1,9 +1,9 @@
-import discord, os, random
-from asyncinit import asyncinit
+from utils.DiscordImports import *
+from utils.CommonImports import *
 from waifu import WaifuClient, ImageCategories
 
 
-@asyncinit
+@asyncinit.asyncinit
 class Actions:
     async def __init__(self, Ctx, Action, Member=None):
         self.waifu = WaifuClient()

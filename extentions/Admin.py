@@ -1,6 +1,8 @@
 import humanfriendly
 
 from utils.CommonImports import *
+from utils.DiscordImports import *
+
 
 class Admin(commands.Cog):
     def __init__(self, bot):
