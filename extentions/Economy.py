@@ -49,7 +49,7 @@ class EconomyCog(Cog, name="Economy"):
         parttwo = 0.8 * (level ** 2)
         partthree = 9 * (level ** 1)
         final = round(partzero + partone + parttwo + partthree, None)
-        return final
+        return float(final)
 
     async def handleExp(self, ctx, fromUser: User):
         embed = None
@@ -58,15 +58,15 @@ class EconomyCog(Cog, name="Economy"):
         rate = work.daily_rate
         fromUser.economy.wallet += rate
         cap = await self.level_check(fromUser.occupation.level)
-        if cap <= exp:
-            exp = exp - cap
+        fromUser.occupation.exp += exp
+        if cap <= fromUser.occupation.exp:
+            fromUser.occupation.exp = fromUser.occupation.exp - cap
             fromUser.occupation.level += 1
             embed = discord.Embed(
                 title=f"Level up",
                 description="",
                 color=0x000c30
             )
-        fromUser.occupation.exp += exp
         await fromUser.occupation.save()
         return embed
 
@@ -196,7 +196,7 @@ class EconomyCog(Cog, name="Economy"):
 
     @bridge.bridge_command()
     @UserBanned()
-    @commands.cooldown(1, 43200, commands.BucketType.user)
+    @commands.cooldown(1, 7200, commands.BucketType.user)
     async def work(self, ctx: bridge.BridgeContext, ):
         fromUser = await User.find_one(User.dn_id == str(ctx.author.id), fetch_links=True)
         if fromUser == None:
@@ -218,3 +218,5 @@ class EconomyCog(Cog, name="Economy"):
 def setup(bot):
     cog = EconomyCog(bot)
     bot.add_cog(cog)
+
+
