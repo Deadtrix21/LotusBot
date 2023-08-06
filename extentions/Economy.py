@@ -179,20 +179,24 @@ class EconomyCog(Cog, name="Economy"):
     @UserBanned()
     @discord.option(name="internship", choices=JsonConfig["intern-jobs"])
     async def internship(self, ctx: bridge.BridgeContext, *, internship: str = "None"):
-        fromUser = await User.find_one(User.dn_id == str(ctx.author.id))
+        fromUser = await User.find_one(User.dn_id == str(ctx.author.id), fetch_links=True)
         if fromUser == None:
             raise UserNotRegistered()
         elif fromUser.occupation == None:
             raise UserNotRegisteredForTax()
-        work = await Work.find_one(Work.name == internship)
-        if isinstance(ctx, bridge.BridgeExtContext):
+        elif internship == "None":
+            if isinstance(ctx, bridge.BridgeExtContext):
+                return await ctx.send(f"Internship cannot be none")
+            elif isinstance(ctx, bridge.BridgeApplicationContext):
+                return await ctx.respond(f"Internship cannot be none")
+        else:
+            work = await Work.find_one(Work.name == internship)
             fromUser.occupation.work = work
             await fromUser.save()
-            await ctx.send(f"{ctx.author.mention} you have applied and been accepted as an {internship}")
-        elif isinstance(ctx, bridge.BridgeApplicationContext):
-            fromUser.occupation.work = work
-            await fromUser.save()
-            await ctx.respond(f"{ctx.author.mention} you have applied and been accepted as an {internship}")
+            if isinstance(ctx, bridge.BridgeExtContext):
+                await ctx.send(f"{ctx.author.mention} you have applied and been accepted as an {internship}")
+            elif isinstance(ctx, bridge.BridgeApplicationContext):
+                await ctx.respond(f"{ctx.author.mention} you have applied and been accepted as an {internship}")
 
     @bridge.bridge_command()
     @UserBanned()
