@@ -2,17 +2,16 @@ from utils.CommonImports import *
 from utils.DiscordImports import *
 from utils.OrmModels import User, Economy, Role, Permission, Account, Work, Occupation
 
-
 JsonConfig = None
 with open(os.getcwd() + "/configs/" + "EconomyConfig.json", "r") as file:
     JsonConfig = json.load(file)
 
 
 class EconomyCog(Cog, name="Economy"):
-    JobsAvailable = ["1","2"]
-    def __init__(self, bot : AutoShardedBot):
-        self.bot = bot
+    JobsAvailable = ["1", "2"]
 
+    def __init__(self, bot: AutoShardedBot):
+        self.bot = bot
 
     def UserBanned(_: any = None):
         async def predicate(ctx: bridge.BridgeExtContext):
@@ -43,6 +42,34 @@ class EconomyCog(Cog, name="Economy"):
         ]
         return float(numpy.random.choice(items, p=probabilities))
 
+    async def level_check(self, level):
+        # deadtrix's fuck you over system
+        partzero = 0.08 * (level ** 3)
+        partone = 0.4 * (level ** 3)
+        parttwo = 0.8 * (level ** 2)
+        partthree = 9 * (level ** 1)
+        final = round(partzero + partone + parttwo + partthree, None)
+        return final
+
+    async def handleExp(self, ctx, fromUser: User):
+        embed = None
+        work = fromUser.occupation.work
+        exp = work.daily_exp
+        rate = work.daily_rate
+        fromUser.economy.wallet += rate
+        cap = await self.level_check(fromUser.occupation.level)
+        if cap <= exp:
+            exp = exp - cap
+            fromUser.occupation.level += 1
+            embed = discord.Embed(
+                title=f"Level up",
+                description="",
+                color=0x000c30
+            )
+        fromUser.occupation.exp += exp
+        await fromUser.occupation.save()
+        return embed
+
     @commands.command(aliases=["dig"])
     @UserBanned()
     @commands.guild_only()
@@ -65,10 +92,10 @@ class EconomyCog(Cog, name="Economy"):
         View your profile
         """
         if (member):
-            account = await User.find_one(User.dn_id == str(member.id))
+            account = await User.find_one(User.dn_id == str(member.id), fetch_links=True)
             staffAccount = await Account.find_one(Account.dn_id == str(member.id), fetch_links=True)
         else:
-            account = await User.find_one(User.dn_id == str(ctx.author.id))
+            account = await User.find_one(User.dn_id == str(ctx.author.id), fetch_links=True)
             staffAccount = await Account.find_one(Account.dn_id == str(ctx.author.id), fetch_links=True)
         if account == None:
             raise UserNotRegistered(member)
@@ -81,8 +108,14 @@ class EconomyCog(Cog, name="Economy"):
             if (staffAccount):
                 Embed.add_field(name=f"Staff Role", value=f"{staffAccount.role.name}", inline=False)
             if (account):
-                Embed.add_field(name=f"Bank Account", value=f"{account.economy.bank}", inline=False)
-                Embed.add_field(name=f"Wallet", value=f"{account.economy.wallet}", inline=False)
+                if account.occupation:
+                    Embed.add_field(name=f"Account Level", value=f"{account.occupation.level}", inline=True)
+                    Embed.add_field(name=f"Account Exp", value=f"{account.occupation.exp}", inline=True)
+                    Embed.add_field(name=f"Exp Needed", value=f"{await self.level_check(account.occupation.level)}",
+                                    inline=True)
+                    Embed.add_field(name=f"Net Worth:", value=f" ", inline=False)
+                Embed.add_field(name=f"Bank Account", value=f"{account.economy.bank}", inline=True)
+                Embed.add_field(name=f"Wallet", value=f"{account.economy.wallet}", inline=True)
             await ctx.send(embed=Embed)
 
     @commands.command(aliases=["give"])
@@ -136,25 +169,50 @@ class EconomyCog(Cog, name="Economy"):
         elif fromUser.occupation:
             raise UserRegisteredForTax()
         else:
-            occupation = Occupation(level=0,exp=0,last_work_day="", work= await Work.find_one(Work.level == 0))
+            occupation = Occupation(level=0, exp=0, last_work_day="")
             await occupation.save()
             fromUser.occupation = occupation;
             await fromUser.save()
             await ctx.send("Registered for tax.")
 
     @bridge.bridge_command(description=JsonConfig["intern-jobs-des"])
+    @UserBanned()
     @discord.option(name="internship", choices=JsonConfig["intern-jobs"])
-    async def internship(self, ctx:bridge.BridgeContext, *, internship:str="None"):
+    async def internship(self, ctx: bridge.BridgeContext, *, internship: str = "None"):
         fromUser = await User.find_one(User.dn_id == str(ctx.author.id))
         if fromUser == None:
             raise UserNotRegistered()
         elif fromUser.occupation == None:
             raise UserNotRegisteredForTax()
+        work = await Work.find_one(Work.name == internship)
         if isinstance(ctx, bridge.BridgeExtContext):
-            await ctx.send("hello world")
+            fromUser.occupation.work = work
+            await fromUser.save()
+            await ctx.send(f"{ctx.author.mention} you have applied and been accepted as an {internship}")
         elif isinstance(ctx, bridge.BridgeApplicationContext):
-            await ctx.respond("hello world")
+            fromUser.occupation.work = work
+            await fromUser.save()
+            await ctx.respond(f"{ctx.author.mention} you have applied and been accepted as an {internship}")
 
+    @bridge.bridge_command()
+    @UserBanned()
+    @commands.cooldown(1, 43200, commands.BucketType.user)
+    async def work(self, ctx: bridge.BridgeContext, ):
+        fromUser = await User.find_one(User.dn_id == str(ctx.author.id), fetch_links=True)
+        if fromUser == None:
+            raise UserNotRegistered()
+        elif fromUser.occupation == None:
+            raise UserNotRegisteredForTax()
+        emb = await self.handleExp(ctx, fromUser)
+        await fromUser.save()
+        if isinstance(ctx, bridge.BridgeExtContext):
+            await ctx.send(
+                f"{ctx.author.mention} you have earned {fromUser.occupation.work.daily_rate} gold for today.",
+                embed=emb)
+        elif isinstance(ctx, bridge.BridgeApplicationContext):
+            await ctx.respond(
+                f"{ctx.author.mention} you have earned {fromUser.occupation.work.daily_rate} gold for today.",
+                embed=emb)
 
 
 def setup(bot):
