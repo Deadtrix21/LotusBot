@@ -19,7 +19,6 @@ class EconomyCog(Cog, name="Economy"):
             if (user.disabled):
                 return False
             return True
-
         return commands.check(predicate)
 
     async def dig_values(self):
@@ -151,9 +150,27 @@ class EconomyCog(Cog, name="Economy"):
                 await fromUser.set({Entity.User.economy: Entity.Economy(wallet=wallet, bank=bank)})
                 await ctx.send(f"{ctx.author.mention} deposited {amount} money into their account")
 
-    @commands.command(aliases=["tax"])
+    @commands.command(aliases=["with"])
     @UserBanned()
-    async def Register4Tax(self, ctx):
+    @commands.cooldown(1, 120, commands.BucketType.user)
+    async def withdraw(self, ctx, amount: int):
+        """Withdraw money from the bank
+        """
+        fromUser = await  Entity.User.find_one(Entity.User.dn_id == str(ctx.author.id))
+        if fromUser == None:
+            raise UserNotRegistered()
+        else:
+            if (amount > fromUser.economy.bank):
+                await ctx.send("Please consider depositing into the bank or earning more money for doing activities.")
+            else:
+                wallet = fromUser.economy.wallet + amount
+                bank = fromUser.economy.bank - amount
+                await fromUser.set({Entity.User.economy: Entity.Economy(wallet=wallet, bank=bank)})
+                await ctx.send(f"{ctx.author.mention} withdrew {amount} money out of their account")
+
+    @commands.command(aliases=["rtax"])
+    @UserBanned()
+    async def tax(self, ctx):
         """Register for tax
         """
         fromUser = await  Entity.User.find_one(Entity.User.dn_id == str(ctx.author.id))
