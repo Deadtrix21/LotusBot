@@ -16,9 +16,20 @@ class EconomyCog(Cog, name="Economy"):
     def UserBanned(_: any = None):
         async def predicate(ctx: bridge.BridgeExtContext):
             user = await Entity.User.find_one(Entity.User.dn_id == str(ctx.author.id))
-            if (user.disabled):
-                return False
+            if (user):
+                if (user.disabled):
+                    return False
             return True
+
+        return commands.check(predicate)
+
+    def RegisteredAuthor(_: any = None):
+        async def predicate(ctx: bridge.BridgeExtContext):
+            user = await Entity.User.find_one(Entity.User.dn_id == str(ctx.author.id))
+            if (user):
+                return True
+            raise UserNotRegistered
+
         return commands.check(predicate)
 
     async def dig_values(self):
@@ -65,6 +76,7 @@ class EconomyCog(Cog, name="Economy"):
         return embed
 
     @commands.command(aliases=["dig"])
+    @RegisteredAuthor()
     @UserBanned()
     @commands.guild_only()
     @commands.cooldown(1, 80, commands.BucketType.user)
@@ -110,6 +122,7 @@ class EconomyCog(Cog, name="Economy"):
             await ctx.send(embed=Embed)
 
     @commands.command(aliases=["give"])
+    @RegisteredAuthor()
     @UserBanned()
     @commands.cooldown(1, 25, commands.BucketType.user)
     async def pay(self, ctx, value: int, Member: discord.Member):
@@ -117,9 +130,8 @@ class EconomyCog(Cog, name="Economy"):
         """
         fromUser = await  Entity.User.find_one(Entity.User.dn_id == str(ctx.author.id))
         toUser = await  Entity.User.find_one(Entity.User.dn_id == str(Member.id))
-        if fromUser == None:
-            raise UserNotRegistered()
-        elif toUser == None:
+
+        if toUser == None:
             raise UserNotRegistered(Member)
         else:
             if (value > fromUser.economy.wallet):
@@ -133,50 +145,45 @@ class EconomyCog(Cog, name="Economy"):
                 await ctx.send(f"{ctx.author.mention} payed {value} to {Member.mention}")
 
     @commands.command(aliases=["dep"])
+    @RegisteredAuthor()
     @UserBanned()
     @commands.cooldown(1, 120, commands.BucketType.user)
     async def deposit(self, ctx, amount: int):
         """Deposit money into the bank (must be 5000 or more)
         """
         fromUser = await  Entity.User.find_one(Entity.User.dn_id == str(ctx.author.id))
-        if fromUser == None:
-            raise UserNotRegistered()
-        else:
-            if (amount > fromUser.economy.wallet):
-                await ctx.send("Please consider withdrawing from the bank or earning more money for doing activities.")
-            elif (amount <= fromUser.economy.wallet and amount >= 5000):
-                wallet = fromUser.economy.wallet - amount
-                bank = fromUser.economy.bank + amount
-                await fromUser.set({Entity.User.economy: Entity.Economy(wallet=wallet, bank=bank)})
-                await ctx.send(f"{ctx.author.mention} deposited {amount} money into their account")
+        if (amount > fromUser.economy.wallet):
+            await ctx.send("Please consider withdrawing from the bank or earning more money for doing activities.")
+        elif (amount <= fromUser.economy.wallet and amount >= 5000):
+            wallet = fromUser.economy.wallet - amount
+            bank = fromUser.economy.bank + amount
+            await fromUser.set({Entity.User.economy: Entity.Economy(wallet=wallet, bank=bank)})
+            await ctx.send(f"{ctx.author.mention} deposited {amount} money into their account")
 
     @commands.command(aliases=["with"])
+    @RegisteredAuthor()
     @UserBanned()
     @commands.cooldown(1, 120, commands.BucketType.user)
     async def withdraw(self, ctx, amount: int):
         """Withdraw money from the bank
         """
         fromUser = await  Entity.User.find_one(Entity.User.dn_id == str(ctx.author.id))
-        if fromUser == None:
-            raise UserNotRegistered()
+        if (amount > fromUser.economy.bank):
+            await ctx.send("Please consider depositing into the bank or earning more money for doing activities.")
         else:
-            if (amount > fromUser.economy.bank):
-                await ctx.send("Please consider depositing into the bank or earning more money for doing activities.")
-            else:
-                wallet = fromUser.economy.wallet + amount
-                bank = fromUser.economy.bank - amount
-                await fromUser.set({Entity.User.economy: Entity.Economy(wallet=wallet, bank=bank)})
-                await ctx.send(f"{ctx.author.mention} withdrew {amount} money out of their account")
+            wallet = fromUser.economy.wallet + amount
+            bank = fromUser.economy.bank - amount
+            await fromUser.set({Entity.User.economy: Entity.Economy(wallet=wallet, bank=bank)})
+            await ctx.send(f"{ctx.author.mention} withdrew {amount} money out of their account")
 
-    @commands.command(aliases=["rtax"])
+    @commands.command(aliases=["register-tax"])
+    @RegisteredAuthor()
     @UserBanned()
     async def tax(self, ctx):
         """Register for tax
         """
         fromUser = await  Entity.User.find_one(Entity.User.dn_id == str(ctx.author.id))
-        if fromUser == None:
-            raise UserNotRegistered()
-        elif fromUser.occupation:
+        if fromUser.occupation:
             raise UserRegisteredForTax()
         else:
             occupation = Entity.Occupation(level=0, exp=0, last_work_day="")
@@ -186,13 +193,12 @@ class EconomyCog(Cog, name="Economy"):
             await ctx.send("Registered for tax.")
 
     @bridge.bridge_command(description=JsonConfig["intern-jobs-des"])
+    @RegisteredAuthor()
     @UserBanned()
     @discord.option(name="internship", choices=JsonConfig["intern-jobs"])
     async def internship(self, ctx: bridge.BridgeContext, *, internship: str = "None"):
         fromUser = await  Entity.User.find_one(Entity.User.dn_id == str(ctx.author.id), fetch_links=True)
-        if fromUser == None:
-            raise UserNotRegistered()
-        elif fromUser.occupation == None:
+        if fromUser.occupation == None:
             raise UserNotRegisteredForTax()
         elif internship == "None":
             if isinstance(ctx, bridge.BridgeExtContext):
@@ -216,13 +222,12 @@ class EconomyCog(Cog, name="Economy"):
                     await ctx.respond(f"{ctx.author.mention} your level is to low to apply for {internship}")
 
     @bridge.bridge_command()
+    @RegisteredAuthor()
     @UserBanned()
     @commands.cooldown(1, 43200, commands.BucketType.user)
     async def work(self, ctx: bridge.BridgeContext):
         fromUser = await  Entity.User.find_one(Entity.User.dn_id == str(ctx.author.id), fetch_links=True)
-        if fromUser == None:
-            raise UserNotRegistered()
-        elif fromUser.occupation == None:
+        if fromUser.occupation == None:
             raise UserNotRegisteredForTax()
         emb = await self.handleExp(ctx, fromUser)
         await fromUser.save()
