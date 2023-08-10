@@ -1,6 +1,6 @@
 from utils.CommonImports import *
 from utils.DiscordImports import *
-from utils.OrmModels import User, Economy, Role, Permission, Account as StaffAccount, Work, Occupation
+from models import repo as Entity
 
 
 class Account(commands.Cog):
@@ -23,12 +23,13 @@ class Account(commands.Cog):
         :parameter email: Enter your email
         :parameter psw: Enter a password
         """
-        account = await User.find_one(User.dn_id == str(ctx.author.id))
+        account = await Entity.User.find_one(Entity.User.dn_id == str(ctx.author.id))
         if (account):
             await ctx.send(f"Account already Exists")
         else:
-            user = User(dn_id=str(ctx.author.id), email=email, password=hashlib.sha256(psw.encode('utf-8')).hexdigest(),
-                        economy=Economy(Wallet=0, BankAccount=0))
+            user = Entity.User(dn_id=str(ctx.author.id), email=email,
+                               password=hashlib.sha256(psw.encode('utf-8')).hexdigest(),
+                               economy=Entity.Economy(Wallet=0, BankAccount=0))
             await user.insert()
             await ctx.send(f"Account Created using {email}")
 
@@ -42,7 +43,7 @@ class Account(commands.Cog):
         :parameter email: Enter your email
         :parameter psw: Enter a password
         """
-        account = await User.find_one(User.email == email)
+        account = await  Entity.User.find_one(Entity.User.email == email)
         if (account):
             if (account.password == hashlib.sha256(psw.encode('utf-8')).hexdigest()):
                 account.dn_id = str(ctx.author.id)
@@ -56,31 +57,31 @@ class Account(commands.Cog):
     @commands.command()
     @commands.is_owner()
     async def CreateRole(self, ctx, name: str):
-        selected_role = await Role.find_one(Role.name == name)
+        selected_role = await Entity.Staff.Role.find_one(Entity.Staff.Role.name == name)
         if (selected_role):
             await ctx.send(f"Role does exist already.")
         else:
-            await Role(name=name).insert()
+            await Entity.Staff.Role(name=name).insert()
             await ctx.send(f"Role '{name}' Created")
 
     @commands.command()
     @commands.is_owner()
     async def AssignRole(self, ctx, member: discord.Member, name: str):
-        selected_role = await Role.find_one(Role.name == name)
+        selected_role = await Entity.Staff.Role.find_one(Entity.Staff.Role.name == name)
         if not selected_role:
             await ctx.send(f"Role does not exist.")
-        account = await StaffAccount.find_one(StaffAccount.dn_id == str(member.id))
+        account = await Entity.Staff.Account.find_one(Entity.Staff.Account.dn_id == str(member.id))
         if (account):
             account.role = selected_role
             account.update()
         else:
-            await StaffAccount(dn_id=str(member.id), role=selected_role).insert()
+            await Entity.Staff.Account(dn_id=str(member.id), role=selected_role).insert()
         await ctx.send(f"Role has been updated for {member.name}")
 
     @commands.command()
     @commands.is_owner()
     async def RemoveRole(self, ctx, member: discord.Member):
-        account = await StaffAccount.find_one(StaffAccount.dn_id == str(member.id))
+        account = await Entity.Staff.Account.find_one(Entity.Staff.Account.dn_id == str(member.id))
         if (account == None):
             await ctx.send(f"{member.mention} has no staff account.")
         else:
@@ -89,18 +90,37 @@ class Account(commands.Cog):
 
     @commands.command()
     @commands.is_owner()
-    async def CreateJob(self, ctx, lvl: float, nameJ: str, daily: float, exp:float):
-        fromJob = await Work.find_one(Work.name == nameJ)
+    async def CreateJob(self, ctx, lvl: int, nameJ: str, daily: int, exp: int):
+        fromJob = await Entity.Work.find_one(Entity.Work.name == nameJ)
         if fromJob:
             return await ctx.send("That Job name already exists.")
-        fromJob = await Work.find_one(Work.level == lvl)
+        fromJob = await Entity.Work.find_one(Entity.Work.level == lvl)
         if fromJob:
             return await ctx.send("That Job level already exists.")
-        work = Work(level=lvl, name=nameJ, daily_rate=daily, daily_exp=exp)
+        work = Entity.Work(level=lvl, name=nameJ, daily_rate=daily, daily_exp=exp)
         await work.save()
         await ctx.send("That Job has been created.")
 
+    @commands.command()
+    async def DisableAccount(self, ctx):
+        pass
 
+    @commands.command()
+    async def EnableAccount(self, ctx):
+        pass
+    @commands.command()
+    async def CreatePermission(self, ctx):
+        pass
+    @commands.command()
+    async def DeletePermission(self, ctx):
+        pass
+    @commands.command()
+    async def AssignPermission(self, ctx):
+        pass
+
+    @commands.command()
+    async def RemovePermission(self, ctx):
+        pass
 def setup(bot):
     cog = Account(bot)
     bot.add_cog(cog)

@@ -1,9 +1,5 @@
-import os
-
-import discord
 from utils.MasterImports import *
-from utils.OrmModels import *
-from .database import DataBaseLayer
+from core.database import DataBaseLayer
 
 
 class NightMareAutoSharded(AutoShardedBot):
@@ -35,7 +31,6 @@ class NightMareAutoSharded(AutoShardedBot):
         app = await self.application_info()
         print(f"App Name: {app.name}")
         print(f"App by {app.owner.name}")
-
 
     def connect_database(self):
         self.loop.run_until_complete(self.__database_layer__.PreHookDatabase(os.getenv("NAME")))

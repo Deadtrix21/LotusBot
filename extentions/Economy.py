@@ -1,6 +1,6 @@
 from utils.CommonImports import *
 from utils.DiscordImports import *
-from utils.OrmModels import User, Economy, Role, Permission, Account, Work, Occupation
+from models import repo as Entity
 
 JsonConfig = None
 with open(os.getcwd() + "/configs/" + "EconomyConfig.json", "r") as file:
@@ -8,22 +8,17 @@ with open(os.getcwd() + "/configs/" + "EconomyConfig.json", "r") as file:
 
 
 class EconomyCog(Cog, name="Economy"):
-    JobsAvailable = ["1", "2"]
+    JobsAvailable = ["example"]
 
     def __init__(self, bot: AutoShardedBot):
         self.bot = bot
 
     def UserBanned(_: any = None):
         async def predicate(ctx: bridge.BridgeExtContext):
-            user = await Account.find_one(Account.dn_id == str(ctx.author.id), fetch_links=True)
-            if (user):
-                role: Role = user.role
-                if (role.name == "BannedAccount"):
-                    return False
-                else:
-                    return True
-            else:
-                return True
+            user = await Entity.User.find_one(Entity.User.dn_id == str(ctx.author.id))
+            if (user.disabled):
+                return False
+            return True
 
         return commands.check(predicate)
 
@@ -40,7 +35,7 @@ class EconomyCog(Cog, name="Economy"):
             0.14,
             0.01
         ]
-        return float(numpy.random.choice(items, p=probabilities))
+        return numpy.random.choice(items, p=probabilities)
 
     async def level_check(self, level):
         # deadtrix's fuck you over system
@@ -49,9 +44,9 @@ class EconomyCog(Cog, name="Economy"):
         parttwo = 0.8 * (level ** 2)
         partthree = 9 * (level ** 1)
         final = round(partzero + partone + parttwo + partthree, None)
-        return float(final)
+        return final
 
-    async def handleExp(self, ctx, fromUser: User):
+    async def handleExp(self, ctx, fromUser: Entity.User):
         embed = None
         work = fromUser.occupation.work
         exp = work.daily_exp
@@ -75,7 +70,7 @@ class EconomyCog(Cog, name="Economy"):
     @commands.guild_only()
     @commands.cooldown(1, 80, commands.BucketType.user)
     async def search(self, ctx):
-        user = await User.find_one(User.dn_id == str(ctx.author.id))
+        user = await  Entity.User.find_one(Entity.User.dn_id == str(ctx.author.id))
         if user == None:
             raise UserNotRegistered()
         else:
@@ -92,11 +87,9 @@ class EconomyCog(Cog, name="Economy"):
         View your profile
         """
         if (member):
-            account = await User.find_one(User.dn_id == str(member.id), fetch_links=True)
-            staffAccount = await Account.find_one(Account.dn_id == str(member.id), fetch_links=True)
+            account = await Entity.User.find_one(Entity.User.dn_id == str(member.id), fetch_links=True)
         else:
-            account = await User.find_one(User.dn_id == str(ctx.author.id), fetch_links=True)
-            staffAccount = await Account.find_one(Account.dn_id == str(ctx.author.id), fetch_links=True)
+            account = await Entity.User.find_one(Entity.User.dn_id == str(ctx.author.id), fetch_links=True)
         if account == None:
             raise UserNotRegistered(member)
         else:
@@ -105,13 +98,12 @@ class EconomyCog(Cog, name="Economy"):
                 description="",
                 color=0x000c30
             )
-            if (staffAccount):
-                Embed.add_field(name=f"Staff Role", value=f"{staffAccount.role.name}", inline=False)
             if (account):
                 if account.occupation:
-                    Embed.add_field(name=f"Account Level", value=f"{account.occupation.level}", inline=True)
-                    Embed.add_field(name=f"Account Exp", value=f"{account.occupation.exp}", inline=True)
-                    Embed.add_field(name=f"Exp Needed", value=f"{await self.level_check(account.occupation.level)}",
+                    Embed.add_field(name=f"Account Level", value=f"{round(account.occupation.level)}", inline=True)
+                    Embed.add_field(name=f"Account Exp", value=f"{round(account.occupation.exp)}", inline=True)
+                    Embed.add_field(name=f"Exp Needed",
+                                    value=f"{round(await self.level_check(account.occupation.level))}",
                                     inline=True)
                     Embed.add_field(name=f"Net Worth:", value=f" ", inline=False)
                 Embed.add_field(name=f"Bank Account", value=f"{account.economy.bank}", inline=True)
@@ -124,8 +116,8 @@ class EconomyCog(Cog, name="Economy"):
     async def pay(self, ctx, value: int, Member: discord.Member):
         """ Pay or Give people money
         """
-        fromUser = await User.find_one(User.dn_id == str(ctx.author.id))
-        toUser = await User.find_one(User.dn_id == str(Member.id))
+        fromUser = await  Entity.User.find_one(Entity.User.dn_id == str(ctx.author.id))
+        toUser = await  Entity.User.find_one(Entity.User.dn_id == str(Member.id))
         if fromUser == None:
             raise UserNotRegistered()
         elif toUser == None:
@@ -135,9 +127,10 @@ class EconomyCog(Cog, name="Economy"):
                 await ctx.send("Please consider withdrawing from the bank or earning more money for doing activities.")
             elif (value <= fromUser.economy.wallet):
                 wallet = fromUser.economy.wallet - value
-                await fromUser.set({User.economy: Economy(wallet=wallet, bank=fromUser.economy.bank)})
+                await fromUser.set({Entity.User.economy: Entity.Economy(wallet=wallet, bank=fromUser.economy.bank)})
                 await toUser.set(
-                    {User.economy: Economy(wallet=toUser.economy.wallet + value, bank=toUser.economy.bank)})
+                    {Entity.User.economy: Entity.Economy(wallet=toUser.economy.wallet + value,
+                                                         bank=toUser.economy.bank)})
                 await ctx.send(f"{ctx.author.mention} payed {value} to {Member.mention}")
 
     @commands.command(aliases=["dep"])
@@ -146,7 +139,7 @@ class EconomyCog(Cog, name="Economy"):
     async def deposit(self, ctx, amount: int):
         """Deposit money into the bank (must be 5000 or more)
         """
-        fromUser = await User.find_one(User.dn_id == str(ctx.author.id))
+        fromUser = await  Entity.User.find_one(Entity.User.dn_id == str(ctx.author.id))
         if fromUser == None:
             raise UserNotRegistered()
         else:
@@ -155,7 +148,7 @@ class EconomyCog(Cog, name="Economy"):
             elif (amount <= fromUser.economy.wallet and amount >= 5000):
                 wallet = fromUser.economy.wallet - amount
                 bank = fromUser.economy.bank + amount
-                await fromUser.set({User.economy: Economy(wallet=wallet, bank=bank)})
+                await fromUser.set({Entity.User.economy: Entity.Economy(wallet=wallet, bank=bank)})
                 await ctx.send(f"{ctx.author.mention} deposited {amount} money into their account")
 
     @commands.command(aliases=["tax"])
@@ -163,13 +156,13 @@ class EconomyCog(Cog, name="Economy"):
     async def Register4Tax(self, ctx):
         """Register for tax
         """
-        fromUser = await User.find_one(User.dn_id == str(ctx.author.id))
+        fromUser = await  Entity.User.find_one(Entity.User.dn_id == str(ctx.author.id))
         if fromUser == None:
             raise UserNotRegistered()
         elif fromUser.occupation:
             raise UserRegisteredForTax()
         else:
-            occupation = Occupation(level=0, exp=0, last_work_day="")
+            occupation = Entity.Occupation(level=0, exp=0, last_work_day="")
             await occupation.save()
             fromUser.occupation = occupation;
             await fromUser.save()
@@ -179,7 +172,7 @@ class EconomyCog(Cog, name="Economy"):
     @UserBanned()
     @discord.option(name="internship", choices=JsonConfig["intern-jobs"])
     async def internship(self, ctx: bridge.BridgeContext, *, internship: str = "None"):
-        fromUser = await User.find_one(User.dn_id == str(ctx.author.id), fetch_links=True)
+        fromUser = await  Entity.User.find_one(Entity.User.dn_id == str(ctx.author.id), fetch_links=True)
         if fromUser == None:
             raise UserNotRegistered()
         elif fromUser.occupation == None:
@@ -190,19 +183,26 @@ class EconomyCog(Cog, name="Economy"):
             elif isinstance(ctx, bridge.BridgeApplicationContext):
                 return await ctx.respond(f"Internship cannot be none")
         else:
-            work = await Work.find_one(Work.name == internship)
-            fromUser.occupation.work = work
-            await fromUser.save()
-            if isinstance(ctx, bridge.BridgeExtContext):
-                await ctx.send(f"{ctx.author.mention} you have applied and been accepted as an {internship}")
-            elif isinstance(ctx, bridge.BridgeApplicationContext):
-                await ctx.respond(f"{ctx.author.mention} you have applied and been accepted as an {internship}")
+            work = await  Entity.Work.find_one(Entity.Work.name == internship)
+            occupation = fromUser.occupation
+            if occupation.level >= work.level:
+                occupation.work = work
+                await occupation.save()
+                if isinstance(ctx, bridge.BridgeExtContext):
+                    await ctx.send(f"{ctx.author.mention} you have applied and been accepted as an {internship}")
+                elif isinstance(ctx, bridge.BridgeApplicationContext):
+                    await ctx.respond(f"{ctx.author.mention} you have applied and been accepted as an {internship}")
+            else:
+                if isinstance(ctx, bridge.BridgeExtContext):
+                    await ctx.send(f"{ctx.author.mention} your level is to low to apply for {internship}")
+                elif isinstance(ctx, bridge.BridgeApplicationContext):
+                    await ctx.respond(f"{ctx.author.mention} your level is to low to apply for {internship}")
 
     @bridge.bridge_command()
     @UserBanned()
-    @commands.cooldown(1, 7200, commands.BucketType.user)
-    async def work(self, ctx: bridge.BridgeContext, ):
-        fromUser = await User.find_one(User.dn_id == str(ctx.author.id), fetch_links=True)
+    @commands.cooldown(1, 1, commands.BucketType.user)
+    async def work(self, ctx: bridge.BridgeContext):
+        fromUser = await  Entity.User.find_one(Entity.User.dn_id == str(ctx.author.id), fetch_links=True)
         if fromUser == None:
             raise UserNotRegistered()
         elif fromUser.occupation == None:
@@ -222,5 +222,3 @@ class EconomyCog(Cog, name="Economy"):
 def setup(bot):
     cog = EconomyCog(bot)
     bot.add_cog(cog)
-
-
