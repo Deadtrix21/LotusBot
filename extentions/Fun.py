@@ -383,9 +383,7 @@ class Fun(commands.Cog):
             game = self.games[user_pos]
             player_pos = [p.user for p in game.players].index(author)
         except KeyError:
-            await author.send("You have to be in a game to play. "
-                              "Start a game with `!start-game` and "
-                              "@mention the people you want to play with.")
+            await author.send("You have to be in a game to play.")
             return
 
         text = msg.content.split(" ")
