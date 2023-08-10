@@ -200,7 +200,7 @@ class EconomyCog(Cog, name="Economy"):
 
     @bridge.bridge_command()
     @UserBanned()
-    @commands.cooldown(1, 1, commands.BucketType.user)
+    @commands.cooldown(1, 43200, commands.BucketType.user)
     async def work(self, ctx: bridge.BridgeContext):
         fromUser = await  Entity.User.find_one(Entity.User.dn_id == str(ctx.author.id), fetch_links=True)
         if fromUser == None:
