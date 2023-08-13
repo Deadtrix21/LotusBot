@@ -1,9 +1,7 @@
-import os
 
-yaml = f"""
 server: # REST and WS server
-  port: {os.getenv("LAVALINK_PORT")}
-  address: {os.getenv("LAVALINK_HOST")}
+  port: 2333
+  address: 127.0.0.1
 plugins:
 #  name: # Name of the plugin
 #    some_key: some_value # Some key-value pair for the plugin
@@ -14,7 +12,7 @@ lavalink:
   #      repository: "repository"
   pluginsDir: "./plugins"
   server:
-    password: "{os.getenv("LAVALINK_PSW")}"
+    password: "DeadTrixIsAWayOfLife"
     sources:
       youtube: true
       bandcamp: true
@@ -93,9 +91,3 @@ logging:
     rollingpolicy:
       max-file-size: 1GB
       max-history: 30
-"""
-
-
-
-with open("./application.yml", "w") as f:
-    f.writelines(yaml)
