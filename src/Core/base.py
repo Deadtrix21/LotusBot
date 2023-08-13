@@ -39,18 +39,15 @@ class NightMareAutoSharded(AutoShardedBot):
         except BaseException as E:
             Log.critical(E)
 
+    @Log.catch()
     async def add_nodes(self):
-
-        try:
-            await self.pool.create_node(
-                host=os.getenv("LAVALINK_HOST"),
-                port=os.getenv("LAVALINK_PORT"),
-                label="MAIN",
-                password=os.getenv("LAVALINK_PSW"),
-            )
-            Log.trace(f"Loaded - [ Voice Modules ]")
-        except Exception:
-            Log.trace(f"Unavailable - [ Voice Modules ]")
+        await self.pool.create_node(
+            host="127.0.0.1",
+            port="2333",
+            label="MAIN",
+            password=os.getenv("LAVALINK_PSW"),
+        )
+        Log.trace(f"Loaded - [ Voice Modules ]")
 
     @Log.catch()
     async def on_ready(self):
@@ -65,5 +62,5 @@ class NightMareAutoSharded(AutoShardedBot):
 
     @Log.catch()
     def BootProcess(self):
-        self.connect_database()
-        self.run(self.__database_layer__.get_token_config(os.getenv("NAME")).token)
+
+        self.run("MTEzNzA3NDk0NzI5OTIxMzMzMg.GyyYtg._iTdDY9bhtmu8vLeozQj-4lNkjb52fYsMsAGys")
