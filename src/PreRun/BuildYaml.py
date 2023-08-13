@@ -97,3 +97,6 @@ logging:
 
 with open("./LavaLink/application.yml", "w") as f:
     f.writelines(yaml)
+
+with open("./application.yml", "w") as f:
+    f.writelines(yaml)
