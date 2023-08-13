@@ -1,5 +1,6 @@
 click
 isort
+PyNaCl
 psutil
 Jinja2
 flake8
