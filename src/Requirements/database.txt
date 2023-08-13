@@ -1,0 +1,2 @@
+marshmallow-dataclass[enum,union]
+beanie

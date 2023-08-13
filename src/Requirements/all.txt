@@ -1,0 +1,5 @@
+-r ./database.txt
+-r ./discord.txt
+-r ./jsk.txt
+-r ./log.txt
+-r ./other.txt
