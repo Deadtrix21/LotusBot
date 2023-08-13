@@ -62,5 +62,5 @@ class NightMareAutoSharded(AutoShardedBot):
 
     @Log.catch()
     def BootProcess(self):
-
-        self.run("MTEzNzA3NDk0NzI5OTIxMzMzMg.GyyYtg._iTdDY9bhtmu8vLeozQj-4lNkjb52fYsMsAGys")
+        self.connect_database()
+        self.run(self.__database_layer__.get_token_config(os.getenv("NAME")).token)
