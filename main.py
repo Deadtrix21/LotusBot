@@ -8,4 +8,4 @@ from src.PreRun import run
 from src.PreRun import BuildYaml
 
 time.sleep(5)
-# NightMareAutoSharded().BootProcess()
+NightMareAutoSharded().BootProcess()
