@@ -1,6 +1,7 @@
-from core.base import NightMareAutoSharded
-from core import configure
+from dotenv import dotenv_values, load_dotenv
+from src.Core.base import NightMareAutoSharded
+from src.PreRun import run
 
 
-bot = NightMareAutoSharded()
-bot.BootProcess()
+load_dotenv()
+NightMareAutoSharded().BootProcess()
