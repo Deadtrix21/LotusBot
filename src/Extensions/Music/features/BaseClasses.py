@@ -40,9 +40,7 @@ class CustomPlayer:
     async def search(self, name: str):
         tracks = None
         stream_type = self.get_stream(name)
-        if (stream_type == "soundcloud"):
-            tracks: list[wavelink.SoundCloudTrack] = await wavelink.SoundCloudTrack.search(name)
-        elif (stream_type == "open"):
+        if (stream_type == "open"):
             decoded = spotify.decode_url(name)
             if not decoded or decoded['type'] is not spotify.SpotifySearchType.track:
                 await self.ctx.send('Only Spotify Track URLs are valid.')
