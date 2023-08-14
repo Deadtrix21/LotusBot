@@ -61,7 +61,7 @@ class NightMareAutoSharded(AutoShardedBot):
                 client_secret=os.getenv("SPOTIFY_SEC")
             )
             node: wavelink.Node = wavelink.Node(
-                uri='http://localhost:2333',
+                uri='http://159.223.11.207:2333',
                 password=os.getenv("LAVALINK_PSW"),
                 retries=10
             )
