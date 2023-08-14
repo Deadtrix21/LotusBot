@@ -1,11 +1,13 @@
 import traceback
 
+from ...Utilities.Imports.SysLogger import GetLogger
 from ...Utilities.Imports.SysImports import *
 from ...Utilities.Imports.DiscordImports import *
+from ...Exceptions.CustomExceptions import *
+
 
 from humanfriendly import format_timespan, parse_timespan
 
-from ...Utilities.Imports.SysLogger import GetLogger
 
 Log = GetLogger(__name__)
 
@@ -25,15 +27,15 @@ class ErrorHandler(Cog):
             return await ctx.reply(f'{ctx.author.mention} Your Not The Owner. Who Are you?')
         if isinstance(error, commands.MissingPermissions):
             return await ctx.reply(f'Are you trying to be a Hero')
-        # if isinstance(error, UserNotRegistered):
-        #     if error.member:
-        #         return await ctx.reply(f"{error.member.display_name} is not registered.")
-        #     else:
-        #         return await ctx.reply(f"You {ctx.author.mention} are not registered.")
-        # if isinstance(error, UserNotRegisteredForTax):
-        #     return await ctx.reply(f"You {ctx.author.mention} are not registered for tax.")
-        # if isinstance(error, UserRegisteredForTax):
-        #     return await ctx.reply(f"You {ctx.author.mention} are already registered for tax.")
+        if isinstance(error, UserNotRegistered):
+            if error.member:
+                return await ctx.reply(f"{error.member.display_name} is not registered.")
+            else:
+                return await ctx.reply(f"You {ctx.author.mention} are not registered.")
+        if isinstance(error, UserNotRegisteredForTax):
+            return await ctx.reply(f"You {ctx.author.mention} are not registered for tax.")
+        if isinstance(error, UserRegisteredForTax):
+            return await ctx.reply(f"You {ctx.author.mention} are already registered for tax.")
         else:
             print('Ignoring exception in command {}:'.format(ctx.command), file=sys.stderr)
             traceback.print_exception(type(error), error, error.__traceback__, file=sys.stderr)

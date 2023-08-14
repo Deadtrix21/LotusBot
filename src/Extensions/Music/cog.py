@@ -3,16 +3,30 @@ from ...Utilities.Imports.DiscordImports import *
 import wavelink
 from wavelink.ext import spotify
 from .features import utils
+from .features.BaseClasses import CustomPlayer
 
 
 class Music(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.Players = {}
+
+    async def GetPlayer(self, ctx):
+        if ctx.guild.id in self.Players.keys():
+            return self.Players[ctx.guild.id]
+        else:
+            _ = CustomPlayer(self.bot, ctx)
+            self.Players[ctx.guild.id] = _
+            return _
+
+    @commands.command()
+    async def play(self, ctx: commands.Context, *, query):
+        player: CustomPlayer = await self.GetPlayer(ctx)
+        await player.search(query)
 
     @commands.command()
     async def SoundCloud(self, ctx: commands.Context, *, search: str) -> None:
         """Simple play command."""
-
         if not ctx.voice_client:
             vc: wavelink.Player = await ctx.author.voice.channel.connect(cls=wavelink.Player)
         else:
@@ -65,7 +79,7 @@ class Music(commands.Cog):
             return
 
         # Set autoplay to True. This can be disabled at anytime...
-        vc.autoplay = True
+        vc.autoplay = False
 
         tracks: list[spotify.SpotifyTrack] = await spotify.SpotifyTrack.search(search)
         if not tracks:
@@ -96,9 +110,8 @@ class Music(commands.Cog):
 
         This command assumes there is a currently connected Player.
         """
-        vc: wavelink.Player = ctx.voice_client
-        await vc.stop()
-
+        player: CustomPlayer = await self.GetPlayer(ctx)
+        await player.skip()
 
 def setup(bot):
     cog = (Music(bot))
