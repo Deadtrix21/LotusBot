@@ -1,1 +1,1 @@
-py-cord[speed] @ git+https://github.com/Pycord-Development/pycord
+py-cord[speed]
