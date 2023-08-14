@@ -90,6 +90,15 @@ class Music(commands.Cog):
         vc: wavelink.Player = ctx.voice_client
         await vc.disconnect()
 
+    @commands.command()
+    async def skip(self, ctx: commands.Context) -> None:
+        """Simple skip command.
+
+        This command assumes there is a currently connected Player.
+        """
+        vc: wavelink.Player = ctx.voice_client
+        await vc.stop()
+
 
 def setup(bot):
     cog = (Music(bot))
