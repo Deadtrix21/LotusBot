@@ -2,6 +2,7 @@ from ...Utilities.Imports.SysImports import *
 from ...Utilities.Imports.DiscordImports import *
 import mafic
 
+
 class Admin(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
@@ -116,23 +117,7 @@ class Admin(commands.Cog):
         await member.remove_timeout(reason=reason)
         await ctx.send(f"{member} has been unmuted!")
 
-    @commands.command()
-    async def play(self,ctx, query: str):
-        if not ctx.voice_client:
-            player = await ctx.author.voice.channel.connect(cls=mafic.Player)
-        else:
-            player = ctx.voice_client
 
-        tracks = await player.fetch_tracks(query)
-
-        if not tracks:
-            return await ctx.send("No tracks found.")
-
-        track = tracks[0]
-
-        await player.play(track)
-
-        await ctx.send(f"Playing {track.title}.")
 
 
 def setup(bot):
