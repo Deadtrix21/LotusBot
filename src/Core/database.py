@@ -15,7 +15,7 @@ class DatabaseLayer:
     def __switch_env__(self):
         self.connection = None
         if (rEnv("APP_ENV") == "prod"):
-            self.connection = f"mongodb+srv://{rEnv('USER')}:{rEnv('PSW')}@{rEnv('CLUSTER')}/?retryWrites=true&w=majority"
+            self.connection = f"mongodb+srv://{rEnv('DB_USER')}:{rEnv('DB_PSW')}@{rEnv('DB_CLUSTER')}/?retryWrites=true&w=majority"
         else:
             self.connection = f"mongodb://localhost:27017/"
         return None
