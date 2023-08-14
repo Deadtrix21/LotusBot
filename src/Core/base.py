@@ -55,7 +55,6 @@ class NightMareAutoSharded(AutoShardedBot):
                 password=os.getenv("LAVALINK_PSW"),
                 retries=10
             )
-
             await wavelink.NodePool.connect(client=self, nodes=[node], spotify=sc)
             Log.trace(f"Loaded - [ Voice Modules ]")
         except Exception:
