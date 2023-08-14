@@ -42,16 +42,6 @@ class NightMareAutoSharded(AutoShardedBot):
         except BaseException as E:
             Log.critical(E)
 
-    # @Log.catch()
-    # async def add_nodes(self):
-    #     await self.pool.create_node(
-    #         host="127.0.0.1",
-    #         port="2333",
-    #         label="MAIN",
-    #         password=os.getenv("LAVALINK_PSW"),
-    #     )
-    #     Log.trace(f"Loaded - [ Voice Modules ]")
-
     async def setup_hook(self) -> None:
         try:
             # Wavelink 2.0 has made connecting Nodes easier... Simply create each Node
@@ -61,7 +51,7 @@ class NightMareAutoSharded(AutoShardedBot):
                 client_secret=os.getenv("SPOTIFY_SEC")
             )
             node: wavelink.Node = wavelink.Node(
-                uri='http://159.223.11.207:2333',
+                uri=f'http://{os.getenv("LAVALINK_HOST")}:{os.getenv("LAVALINK_PORT")}',
                 password=os.getenv("LAVALINK_PSW"),
                 retries=10
             )
