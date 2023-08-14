@@ -17,6 +17,7 @@ class CustomPlayer:
 
         self.wavelink_player: wavelink.Player = None
         self.bot.loop.create_task(self.player_config())
+        self.bot.loop.create_task(self.player_config())
 
     async def ConnectChannel(self):
         if not self.ctx.voice_client:
@@ -79,6 +80,10 @@ class CustomPlayer:
         await self.ConnectChannel()
         self.wavelink_player.autoplay = False
         await self.wavelink_player.set_volume(self.player_volume)
+
+    async def disconnect_from(self):
+        if (len(self.ctx.voice_client.client.users) == 0):
+            return True
 
     async def get_player(self):
         return self.wavelink_player

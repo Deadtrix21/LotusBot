@@ -7,8 +7,9 @@ from .features.BaseClasses import CustomPlayer
 
 
 class Music(commands.Cog):
+    GUILD_VC_TIMER = {}
     def __init__(self, bot):
-        self.bot = bot
+        self.bot :AutoShardedBot = bot
         self.Players = {}
 
     async def GetPlayer(self, ctx):
@@ -19,81 +20,53 @@ class Music(commands.Cog):
             self.Players[ctx.guild.id] = _
             return _
 
+    async def DelPlayer(self, id):
+        if id in self.Players.keys():
+            del self.Players[id]
+            return
+
+    @commands.Cog.listener()
+    async def on_voice_state_update(self, member, before, after):
+        # if event is triggered by the bot? return
+        if member.id == self.bot.user.id:
+            return
+
+        # when before.channel != None that means user has left a channel
+        if before.channel != None:
+            voice = discord.utils.get(self.bot.voice_clients , channel__guild__id = before.channel.guild.id)
+
+            # voice is voiceClient and if it's none? that means the bot is not in an y VC of the Guild that triggerd this event
+            if voice == None:
+                return
+
+            # if VC left by the user is not equal to the VC that bot is in? then return
+            if voice.channel.id != before.channel.id:
+                return
+
+            # if VC has only 1 member (including the bot)
+            if len(voice.channel.members) <= 1:
+
+                self.GUILD_VC_TIMER[before.channel.guild.id] = 0
+
+                while True:
+                    await asyncio.sleep(1)
+                    self.GUILD_VC_TIMER[before.channel.guild.id] += 1
+                    # if vc has more than 1 member or bot is already disconnectd ? break
+                    if len(voice.channel.members) >= 2 or not voice.is_connected():
+                        break
+                    # if bot has been alone in the VC for more than 60 seconds ? disconnect
+                    if self.GUILD_VC_TIMER[before.channel.guild.id] >= 30:
+                        await self.DelPlayer(before.channel.guild.id)
+                        await voice.disconnect()
+                        return
+
+
     @commands.command()
     async def play(self, ctx: commands.Context, *, query):
         player: CustomPlayer = await self.GetPlayer(ctx)
         await player.search(query)
 
-    @commands.command()
-    async def SoundCloud(self, ctx: commands.Context, *, search: str) -> None:
-        """Simple play command."""
-        if not ctx.voice_client:
-            vc: wavelink.Player = await ctx.author.voice.channel.connect(cls=wavelink.Player)
-        else:
-            vc: wavelink.Player = ctx.voice_client
 
-        tracks: list[wavelink.SoundCloudTrack] = await wavelink.SoundCloudTrack.search(search)
-        if not tracks:
-            await ctx.send(f'Sorry I could not find any songs with search: `{search}`')
-            return
-
-        track: wavelink.SoundCloudTrack = tracks[0]
-        await vc.play(track)
-
-    @commands.command(hidden=True)
-    @commands.is_owner()
-    async def Youtube(self, ctx: commands.Context, *, search: str) -> None:
-        """Simple play command."""
-
-        if not ctx.voice_client:
-            vc: wavelink.Player = await ctx.author.voice.channel.connect(cls=wavelink.Player)
-        else:
-            vc: wavelink.Player = ctx.voice_client
-
-        tracks: list[wavelink.YouTubeTrack] = await wavelink.YouTubeTrack.search(search)
-        if not tracks:
-            await ctx.send(f'Sorry I could not find any songs with search: `{search}`')
-            return
-
-        track: wavelink.YouTubeTrack = tracks[0]
-        await vc.play(track)
-
-    @commands.command(hidden=True)
-    @commands.is_owner()
-    async def Spotify(self, ctx: commands.Context, *, search: str) -> None:
-        """Simple play command that accepts a Spotify song URL.
-
-        This command enables AutoPlay. AutoPlay finds songs automatically when used with Spotify.
-        Tracks added to the Queue will be played in front (Before) of those added by AutoPlay.
-        """
-
-        if not ctx.voice_client:
-            vc: wavelink.Player = await ctx.author.voice.channel.connect(cls=wavelink.Player)
-        else:
-            vc: wavelink.Player = ctx.voice_client
-
-        # Check the search to see if it matches a valid Spotify URL...
-        decoded = spotify.decode_url(search)
-        if not decoded or decoded['type'] is not spotify.SpotifySearchType.track:
-            await ctx.send('Only Spotify Track URLs are valid.')
-            return
-
-        # Set autoplay to True. This can be disabled at anytime...
-        vc.autoplay = False
-
-        tracks: list[spotify.SpotifyTrack] = await spotify.SpotifyTrack.search(search)
-        if not tracks:
-            await ctx.send('This does not appear to be a valid Spotify URL.')
-            return
-
-        track: spotify.SpotifyTrack = tracks[0]
-
-        # IF the player is not playing immediately play the song...
-        # otherwise put it in the queue...
-        if not vc.is_playing():
-            await vc.play(track, populate=True)
-        else:
-            await vc.queue.put_wait(track)
 
     @commands.command()
     async def disconnect(self, ctx: commands.Context) -> None:
