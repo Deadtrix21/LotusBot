@@ -60,6 +60,11 @@ class Music(commands.Cog):
                         await voice.disconnect()
                         return
 
+    @commands.Cog.listener()
+    async def on_wavelink_track_end(self, payload: wavelink.TrackEventPayload):
+        await payload.player.stop()
+
+
 
     @commands.command()
     async def play(self, ctx: commands.Context, *, query):
