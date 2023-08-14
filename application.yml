@@ -1,13 +1,11 @@
-import os
 
-yaml = f"""
 server: # REST and WS server
   port: 2333
   address: 0.0.0.0
 
 lavalink:
   server:
-    password: "{os.getenv("LAVALINK_PSW")}"
+    password: "DeadTrixIsAWayOfLife"
     playerUpdateInterval: 5 # How frequently to send player updates to clients, in seconds
     statsTaskInterval: 60 # How frequently to send the node stats to clients, in seconds
     koe:
@@ -77,9 +75,3 @@ logging:
     lavalink: INFO
 
 
-"""
-
-
-
-with open("./application.yml", "w") as f:
-    f.writelines(yaml)
