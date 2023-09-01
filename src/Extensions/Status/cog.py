@@ -1,7 +1,6 @@
 from ...Utilities.Imports.SysImports import *
 from ...Utilities.Imports.DiscordImports import *
 
-
 class Status(Cog):
     def __init__(self, bot) -> None:
         self.bot = bot
@@ -14,13 +13,9 @@ class Status(Cog):
         now = arrow.get(arrow.utcnow())
         utc = arrow.get(self.start_up)
         core = now - utc
-        seconds = core.total_seconds()
-        minutes, seconds = divmod(seconds, 60)
-        hour, minutes = divmod(minutes, 60)
-        hour = round(hour)
-        minute = round(minutes)
-        second = round(seconds)
-        return f"for {hour} hours, {minute} minutes and {second} seconds"
+        return humanfriendly.format_timespan(core.total_seconds())
+
+
 
     def pick_status(self):
         pick = {

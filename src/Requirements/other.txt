@@ -7,5 +7,4 @@ waifu-py
 arrow
 gtts
 numpy
-mafic
 python-dotenv
