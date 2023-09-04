@@ -3,6 +3,7 @@ from PythonSrc.Utilities.Imports.Database import *
 from PythonSrc.Utilities.Misc.Database import rEnv
 from PythonSrc.Database import Token, Work, User, Occupation
 
+
 class DatabaseLayer:
     __client_database__ = None
     __client_connection__ = None
