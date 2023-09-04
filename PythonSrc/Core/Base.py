@@ -1,3 +1,4 @@
+from mafic import NodePool
 from PythonSrc.Utilities.Imports import System, Database, Discord
 from PythonSrc.Utilities import Logger
 from PythonSrc.Utilities.Misc import Database
@@ -14,6 +15,7 @@ class NightmareLotus(Discord.AutoShardedBot):
         super().__init__("x", intents=Discord.Intents.default().all(), case_insensitive=True)
         self.configure = Configure()
         self.__database_layer__ = DatabaseLayer(self.loop)
+        self.pool = NodePool(self)
 
     @Log.catch()
     async def setup_mafic(self):
@@ -25,8 +27,8 @@ class NightmareLotus(Discord.AutoShardedBot):
                 password=System.os.getenv("LAVALINK_PSW"),
             )
             Log.trace(f"Loaded - [ Mafic Voice Connection ]")
-        except Exception:
-            Log.critical(f"Unavailable - [ Mafic Voice Connection ]")
+        except Exception as e:
+            Log.critical(f"Unavailable - [ Mafic Voice Connection ] : {e}")
 
     @Log.catch()
     async def on_connect(self):

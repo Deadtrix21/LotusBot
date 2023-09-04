@@ -1,8 +1,7 @@
 from PythonSrc.Utilities.Imports.System import *
 from PythonSrc.Utilities.Imports.Discord import *
 from PythonSrc.Utilities import Logger
-from PythonSrc.Static.mafic import NodePool, Player, Playlist, Track, TrackEndEvent, SearchType
-
+from mafic import NodePool, Player, Playlist, Track, TrackEndEvent, SearchType
 from .Queue import PlayerQueue
 
 
