@@ -64,7 +64,7 @@ sentry:
 
 logging:
   file:
-    path: ./logs/
+    path: ./Logs/Lavalink/
   logback:
     rollingpolicy:
       max-file-size: 1GB
