@@ -1,4 +1,0 @@
-{
-  "ext_dir": "/src/Extensions/",
-  "load_ext": "src.Extensions."
-}

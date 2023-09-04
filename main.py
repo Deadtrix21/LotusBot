@@ -1,11 +1,8 @@
-import time
-
+from PythonSrc.Core.Base import NightmareLotus
 from dotenv import dotenv_values, load_dotenv
-from src.Core.base import NightMareAutoSharded
 
 load_dotenv()
-from src.PreRun import run
 
 
-
-NightMareAutoSharded().BootProcess()
+NightmareLotus = NightmareLotus()
+NightmareLotus.boot()
