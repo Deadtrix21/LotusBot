@@ -121,7 +121,6 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
 .venv
 env/
 venv/
@@ -167,3 +166,4 @@ cython_debug/
 mafic-master/
 
 logs/
+.env.yml
