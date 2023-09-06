@@ -1,6 +1,6 @@
+from PythonSrc.Utilities.Imports import Discord
 from PythonSrc.Utilities.Imports.System import *
 from PythonSrc.Utilities.Imports.Database import *
-from PythonSrc.Utilities.Misc.Database import rEnv
 from PythonSrc.Database import Token, Work, User, Occupation
 
 
@@ -8,16 +8,13 @@ class DatabaseLayer:
     __client_database__ = None
     __client_connection__ = None
 
-    def __init__(self, bot_loop):
-        self.loop = bot_loop
+    def __init__(self, loop, config):
+        self.primary_service = config
+        self.loop = loop
         self.__switch_env__()
 
     def __switch_env__(self):
-        self.connection = None
-        if (rEnv("APP_ENV") == "prod"):
-            self.connection = f"mongodb+srv://{rEnv('DB_USER')}:{rEnv('DB_PSW')}@{rEnv('DB_CLUSTER')}/?retryWrites=true&w=majority"
-        else:
-            self.connection = f"mongodb://localhost:27017/"
+        self.connection = self.primary_service["database"]["url"]
         return None
 
     async def __orm_config__(self):

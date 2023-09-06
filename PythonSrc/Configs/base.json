@@ -1,4 +1,0 @@
-{
-  "ext_dir": "/PythonSrc/Extensions/",
-  "load_ext": "PythonSrc.Extensions."
-}
