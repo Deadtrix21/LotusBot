@@ -517,6 +517,104 @@ class Fun(commands.Cog):
                 emb.color = discord.Color.red()
             await p.user.send(embed=emb)
 
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.command()
+    async def ping_command(self, ctx: commands.Context) -> None:
+        await ctx.send(
+            f"🏓 Pong!: {self.bot.latency * 1000:.2f}ms",
+        )
+
+    # @commands.cooldown(1, 5, commands.BucketType.user)
+    # @commands.command(name="poll", description="Creates a reaction poll")
+    # async def poll_command(self, ctx: commands.Context, *, text: str) -> None:
+    #     with suppress(discord.HTTPException, AttributeError):
+    #         await ctx.message.delete()
+    #
+    #     embed = PollEmbed(ctx, text)
+    #
+    #     message = await ctx.send(embed=embed)
+    #     await message.add_reaction("👍")
+    #     await message.add_reaction("👎")
+    #     await message.add_reaction("🤷")
+
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.command()
+    async def roll_command(
+            self,
+            ctx: commands.Context,
+            maximum: int = 100,
+    ) -> None:
+        await ctx.send(f"🎲 Rolled: **{random.randint(1, maximum)}**")
+
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.command()
+    async def flip_command(self, ctx: commands.Context) -> None:
+        await ctx.send(f"🪙 Flipped: **{'Heads' if random.randint(0, 1) else 'Tails'}**")
+
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.command()
+    async def duel_command(self, ctx: commands.Context, user: discord.User) -> None:
+        if user is ctx.author:
+            await ctx.send("You can't duel yourself!")
+            return
+
+        if user.bot:
+            await ctx.send("You can't duel a bot!")
+            return
+
+        await ctx.send(
+            f"{ctx.author.mention} and {user.mention} dueled for **{random.randint(2, 120)}** hours! It was a long battle, but {numpy.choice([ctx.author.mention, user.mention])} came out victorious!",
+            silent=True,
+        )
+
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.command()
+    async def love_command(self, ctx: commands.Context, user: discord.User) -> None:
+        if user is ctx.author:
+            await ctx.send("You can't love yourself!")
+            return
+
+        if user.bot:
+            await ctx.send("You can't love a bot!")
+            return
+
+        love_percentage = (ctx.author.id + user.id) % 100
+
+        await ctx.send(
+            f"{ctx.author.mention} and {user.mention} love each other **{love_percentage}%**!",
+            silent=True,
+        )
+
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.command(
+        aliases=["rd", "hc"],
+    )
+    async def rollduel_command(self, ctx: commands.Context, user: discord.User) -> None:
+        if user is ctx.author:
+            await ctx.send("You can't duel yourself!")
+            return
+
+        if user.bot:
+            await ctx.send("You can't duel a bot!")
+            return
+
+        roll_1 = random.randint(1, 100)
+        roll_2 = random.randint(1, 100)
+
+        if roll_1 == roll_2:
+            await ctx.send(
+                f"{ctx.author.mention} and {user.mention} dueled in a roll off!\nThey tied with a roll of **{roll_1}**!",
+                silent=True,
+            )
+            return
+
+        winner, loser = (ctx.author, user) if roll_1 > roll_2 else (user, ctx.author)
+        roll_1, roll_2 = max(roll_1, roll_2), min(roll_1, roll_2)
+        await ctx.send(
+            f"{ctx.author.mention} and {user.mention} dueled in a roll off!\n{winner.mention} rolled **{roll_1}** and {loser.mention} rolled **{roll_2}**!\n{winner.mention} won!",
+            silent=True,
+        )
+
 
 def setup(bot):
     c = Fun(bot)

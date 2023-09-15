@@ -1,7 +1,7 @@
 try:
     from .cog import *
-except Exception:
-    pass
+except Exception as e:
+    print(e)
 
 __all__ = (
     "setup"
