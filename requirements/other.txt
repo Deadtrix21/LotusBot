@@ -1,0 +1,11 @@
+
+humanfriendly
+python-dotenv
+asyncinit
+Pillow
+waifu-py
+arrow
+gtts
+numpy
+python-dotenv
+pyyaml

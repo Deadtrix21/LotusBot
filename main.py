@@ -1,10 +1,5 @@
-from PythonSrc.Core.Base import NightmareLotus
-from dotenv import load_dotenv
-
-load_dotenv()
-
-from PythonSrc.PostConfigureations import Extentions
+from src.classes.NightmareFever import NightmareLotus
 
 
-NightmareLotus = NightmareLotus()
-NightmareLotus.boot()
+Lotus = NightmareLotus()
+Lotus.run()

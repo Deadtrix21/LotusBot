@@ -1,0 +1,18 @@
+click
+isort
+PyNaCl
+psutil
+Jinja2
+flake8
+pylint
+pytest
+coverage
+pytest-cov
+youtube-dl
+pytest-mock
+click>=8.0.1
+sphinx>=3.5.4
+braceexpand>=0.1.7
+sphinxcontrib-asyncio
+import_expression>=1.0.0,<2.0.0
+importlib_metadata>=3.7.0; python_version<"3.10"
