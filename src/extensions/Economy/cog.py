@@ -1,22 +1,25 @@
-from PythonSrc.Utilities.Imports.System import *
-from PythonSrc.Utilities.Imports.Discord import *
-from PythonSrc.Utilities import Logger
-from PythonSrc.Utilities.Misc.Database import read_json, write_json
-from ... import Database as Entity
-from ...Exceptions.CustomExceptions import *
+from src.utils.helpers import read_json, write_json
+from src.utils.base_imports import *
+from src.services.LogService import SpecificLog
 
-Log = Logger.GetLogger(__name__)
+from src import models as Entity
+
+Logger = SpecificLog(__name__)
+
+if typing.TYPE_CHECKING:
+    from src.classes.NightmareFever import NightmareLotus
+
 JsonConfig = read_json("EconomyConfig.json")
 
 
-class Economy(Cog):
+class Economy(Extension):
     JobsAvailable = ["example"]
 
     def __init__(self, bot: AutoShardedBot):
         self.bot = bot
 
     def UserBanned(_: any = None):
-        async def predicate(ctx: bridge.BridgeExtContext):
+        async def predicate(ctx: BridgeExtContext):
             user = await Entity.User.find_one(Entity.User.dn_id == str(ctx.author.id))
             if (user):
                 if (user.disabled):
@@ -26,11 +29,12 @@ class Economy(Cog):
         return commands.check(predicate)
 
     def RegisteredAuthor(_: any = None):
-        async def predicate(ctx: bridge.BridgeExtContext):
+        async def predicate(ctx: BridgeExtContext):
+            return True
             user = await Entity.User.find_one(Entity.User.dn_id == str(ctx.author.id))
             if (user):
                 return True
-            raise UserNotRegistered
+            raise ValueError
 
         return commands.check(predicate)
 
@@ -85,7 +89,7 @@ class Economy(Cog):
     async def search(self, ctx):
         user = await  Entity.User.find_one(Entity.User.dn_id == str(ctx.author.id))
         if user == None:
-            raise UserNotRegistered()
+            raise ValueError
         else:
             amount = await self.dig_values()
             user.economy.wallet = user.economy.wallet + int(amount)
@@ -104,7 +108,7 @@ class Economy(Cog):
         else:
             account = await Entity.User.find_one(Entity.User.dn_id == str(ctx.author.id), fetch_links=True)
         if account == None:
-            raise UserNotRegistered(member)
+            raise ValueError(member)
         else:
             Embed = discord.Embed(
                 title=f"Profile: {ctx.author.name if member == None else member.name}",
@@ -134,7 +138,7 @@ class Economy(Cog):
         toUser = await  Entity.User.find_one(Entity.User.dn_id == str(Member.id))
 
         if toUser == None:
-            raise UserNotRegistered(Member)
+            raise ValueError(Member)
         else:
             if (value > fromUser.economy.wallet):
                 await ctx.send("Please consider withdrawing from the bank or earning more money for doing activities.")
@@ -186,7 +190,7 @@ class Economy(Cog):
         """
         fromUser = await  Entity.User.find_one(Entity.User.dn_id == str(ctx.author.id))
         if fromUser.occupation:
-            raise UserRegisteredForTax()
+            raise ValueError()
         else:
             occupation = Entity.Occupation(level=0, exp=0, last_work_day="")
             await occupation.save()
@@ -194,18 +198,18 @@ class Economy(Cog):
             await fromUser.save()
             await ctx.send("Registered for tax.")
 
-    @bridge.bridge_command(description=JsonConfig["intern-jobs-des"])
+    @bridge_command(description=JsonConfig["intern-jobs-des"])
     @RegisteredAuthor()
     @UserBanned()
     @discord.option(name="internship", choices=JsonConfig["intern-jobs"])
-    async def internship(self, ctx: bridge.BridgeContext, *, internship: str = "None"):
+    async def internship(self, ctx: BridgeContext, *, internship: str = "None"):
         fromUser = await  Entity.User.find_one(Entity.User.dn_id == str(ctx.author.id), fetch_links=True)
         if fromUser.occupation == None:
-            raise UserNotRegisteredForTax()
+            raise ValueError()
         elif internship == "None":
-            if isinstance(ctx, bridge.BridgeExtContext):
+            if isinstance(ctx, BridgeExtContext):
                 return await ctx.send(f"Internship cannot be none")
-            elif isinstance(ctx, bridge.BridgeApplicationContext):
+            elif isinstance(ctx, BridgeApplicationContext):
                 return await ctx.respond(f"Internship cannot be none")
         else:
             work = await  Entity.Work.find_one(Entity.Work.name == internship)
@@ -213,31 +217,31 @@ class Economy(Cog):
             if occupation.level >= work.level:
                 occupation.work = work
                 await occupation.save()
-                if isinstance(ctx, bridge.BridgeExtContext):
+                if isinstance(ctx, BridgeExtContext):
                     await ctx.send(f"{ctx.author.mention} you have applied and been accepted as an {internship}")
-                elif isinstance(ctx, bridge.BridgeApplicationContext):
+                elif isinstance(ctx, BridgeApplicationContext):
                     await ctx.respond(f"{ctx.author.mention} you have applied and been accepted as an {internship}")
             else:
-                if isinstance(ctx, bridge.BridgeExtContext):
+                if isinstance(ctx, BridgeExtContext):
                     await ctx.send(f"{ctx.author.mention} your level is to low to apply for {internship}")
-                elif isinstance(ctx, bridge.BridgeApplicationContext):
+                elif isinstance(ctx, BridgeApplicationContext):
                     await ctx.respond(f"{ctx.author.mention} your level is to low to apply for {internship}")
 
-    @bridge.bridge_command()
+    @bridge_command()
     @RegisteredAuthor()
     @UserBanned()
     @commands.cooldown(1, 43200, commands.BucketType.user)
-    async def work(self, ctx: bridge.BridgeContext):
+    async def work(self, ctx: BridgeContext):
         fromUser = await  Entity.User.find_one(Entity.User.dn_id == str(ctx.author.id), fetch_links=True)
         if fromUser.occupation == None:
-            raise UserNotRegisteredForTax()
+            raise ValueError()
         emb = await self.handleExp(ctx, fromUser)
         await fromUser.save()
-        if isinstance(ctx, bridge.BridgeExtContext):
+        if isinstance(ctx, BridgeExtContext):
             await ctx.send(
                 f"{ctx.author.mention} you have earned {fromUser.occupation.work.daily_rate} gold for today.",
                 embed=emb)
-        elif isinstance(ctx, bridge.BridgeApplicationContext):
+        elif isinstance(ctx, BridgeApplicationContext):
             await ctx.respond(
                 f"{ctx.author.mention} you have earned {fromUser.occupation.work.daily_rate} gold for today.",
                 embed=emb)

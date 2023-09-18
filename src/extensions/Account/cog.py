@@ -1,9 +1,7 @@
-from discord import VoiceProtocol
-
 from src.utils.base_imports import *
 from src.services.LogService import SpecificLog
 
-from ... import Database as Entity
+from src import models as Entity
 
 Logger = SpecificLog(__name__)
 
@@ -16,7 +14,7 @@ class Account(commands.Cog):
         self.bot = bot
 
     def staff_perms(user_level: str):
-        async def predicate(ctx: bridge.BridgeExtContext):
+        async def predicate(ctx: BridgeExtContext):
             pass
 
         return commands.check(predicate)
