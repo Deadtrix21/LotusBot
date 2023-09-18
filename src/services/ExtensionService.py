@@ -1,6 +1,7 @@
 from src.utils.base_imports import os, typing
 
 from src.services.LogService import SpecificLog
+
 Logger = SpecificLog(__name__)
 
 if typing.TYPE_CHECKING:
@@ -14,6 +15,12 @@ class ExtensionService:
         self.listener_path: str = self.bot.primary_service.get_config()["app-configs"]["listeners-directory"]
 
     async def load_extensions(self):
+        try:
+            self.bot.load_extension("jishaku")
+            Logger.success(f"Loaded Jishaku")
+        except Exception as e:
+            Logger.critical(e)
+
         extensions = []
         for listenfile in os.listdir(os.getcwd() + "/" + self.listener_path):
             extensions.append(f"{self.listener_path.replace('/', '.')}{listenfile}")
@@ -26,8 +33,3 @@ class ExtensionService:
                 Logger.success(f"Loaded {module_name}")
             except Exception as e:
                 Logger.critical(e)
-
-
-
-
-
