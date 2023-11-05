@@ -8,7 +8,7 @@ class PrimaryService:
         self.setup_hook()
 
     def setup_hook(self):
-        with open('.env.yml', 'r') as file:
+        with open('../environment/.env.yml', 'r') as file:
             self.__service = safe_load(file)['discord']
         self.__service_env = self.__service[self.check_env()]
 
