@@ -1,6 +1,8 @@
 from src.utils.base_imports import *
 from src.services.LogService import SpecificLog
 
+from features import Cmds
+
 Logger = SpecificLog(__name__)
 
 
@@ -17,11 +19,19 @@ class Admin(Extension):
         """
         Kicks a member from the server. Reason is required.
         """
-        if not reason:
-            reason = "No reason provided."
+        await Cmds.KickDiscordMember(ctx, member, reason=reason)
 
-        await member.kick(reason=reason)
-        await ctx.send(f'Kicked `{member}`')
+    @commands.guild_only()
+    @commands.has_guild_permissions(kick_members=True)
+    @commands.bot_has_permissions(kick_members=True)
+    @commands.command(name="mass-kick", aliases=['mk'])
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def masskick_command(self, ctx, members: commands.Greedy[DiscordMember], *, reason):
+        """
+        Mass kick multiple members from the server. Reason is required.
+        You can only kick users who are in the server.
+        """
+        await Cmds.MassKickDiscordMember(ctx, members, reason=reason)
 
     @commands.has_guild_permissions(ban_members=True)
     @commands.bot_has_permissions(ban_members=True)
@@ -32,16 +42,7 @@ class Admin(Extension):
         Bans a member from the server. Reason is required
         You can also ban someone that is not in the server using their user ID.
         """
-        if reason:
-            if isinstance(member, int):
-                await ctx.guild.ban(DiscordObject(id=member), reason=f"{reason}")
-                user = await self.bot.fetch_user(member)
-                await ctx.send(f'Banned `{user}`')
-            else:
-                await member.ban(reason=f"{reason}", delete_message_days=0)
-                await ctx.send(f'Banned `{member}`')
-        else:
-            await ctx.send(f"Provide a reason to ban this user.")
+        await Cmds.BanDiscordMember(ctx, member, reason=reason)
 
     @commands.guild_only()
     @commands.has_guild_permissions(ban_members=True)
@@ -53,13 +54,7 @@ class Admin(Extension):
         Mass bans multiple members from the server. Reason is required.
         You can only ban users who are in the server.
         """
-        if not len(members):
-            await ctx.send('One or more required arguments are missing.')
-
-        else:
-            for target in members:
-                await target.ban(reason=reason, delete_message_days=0)
-                await ctx.send(f'Banned `{target}`')
+        await Cmds.MassBanDiscordMember(ctx, members, reason=reason)
 
     @commands.guild_only()
     @commands.has_permissions(ban_members=True)

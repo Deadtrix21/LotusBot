@@ -30,20 +30,20 @@ class NightmareLotus(AutoShardedBot):
             case_insensitive=True
         )
 
-    async def on_ready(self):
+    async def on_ready(self) -> None:
         app = await self.application_info()
         Logger.success(f"App Name - {app.name} | Made by - {app.owner.name} | {len(self.shards)}")
         await self.start_services()
 
-    def hook_services(self):
+    def hook_services(self) -> None:
         self.database_service = DatabaseService(self.loop, self.primary_service.get_env_config())
         self.music_service = MusicService(self, self.primary_service.get_env_config())
         self.extension_service = ExtensionService(self)
 
-    async def start_services(self):
+    async def start_services(self) -> None:
         await self.wait_until_ready()
         await self.music_service.connect_nodes()
-        await self.extension_service.load_extensions()
+        await self.extension_service.start_loader()
 
     async def close(self) -> None:
         self.database_service.close()

@@ -9,3 +9,4 @@ gtts
 numpy
 python-dotenv
 pyyaml
+python-box[all]
