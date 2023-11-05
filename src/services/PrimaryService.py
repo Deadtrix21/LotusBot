@@ -8,8 +8,15 @@ class PrimaryService:
         self.setup_hook()
 
     def setup_hook(self):
-        with open('../environment/.env.yml', 'r') as file:
-            self.__service = safe_load(file)['discord']
+        try:
+            with open('../environment/.env.yml', 'r') as file:
+                self.__service = safe_load(file)['discord']
+        except Exception as e:
+            try:
+                with open('.env.yml', 'r') as file:
+                    self.__service = safe_load(file)['discord']
+            except Exception as error:
+                print("Cannot find config")
         self.__service_env = self.__service[self.check_env()]
 
     def check_env(self) -> str:
