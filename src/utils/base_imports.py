@@ -14,7 +14,7 @@ from discord import (
 from discord.abc import GuildChannel
 from discord.ext import commands, tasks
 from typing import Union, List, Dict, TypedDict, DefaultDict, OrderedDict, Optional, Tuple, Any, NamedTuple, Awaitable, \
-    Coroutine, Hashable, NoReturn, NotRequired, Required
+    Coroutine, Hashable
 import discord
 
 create_invite = GuildChannel.create_invite
